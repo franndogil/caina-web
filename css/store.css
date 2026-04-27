@@ -1,0 +1,159 @@
+    :root {
+      --black:    #0A0A0A;
+      --lime:     #C9F33A;
+      --white:    #FFFFFF;
+      --gray:     #141414;
+      --gray-mid: #1E1E1E;
+      --muted:    #777;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .products {
+      padding: 5rem 2rem;
+      padding-top: 100px;
+    }
+
+    .sec-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .sec-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+
+    .sec-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      line-height: 1;
+      margin-bottom: .8rem;
+    }
+
+    .sec-sub {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--gray-mid);
+      border: 1px solid rgba(201,243,58,.08);
+      border-radius: 18px;
+      padding: 1.8rem 1.5rem;
+      transition: .3s;
+    }
+
+    .card:hover {
+      border-color: rgba(201,243,58,.5);
+      transform: translateY(-4px);
+    }
+
+    .card-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: .4rem;
+    }
+
+    .card-desc {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    button {
+      width: 100%;
+      margin-top: .5rem;
+      border: none;
+      background: rgba(201,243,58,.08);
+      color: var(--white);
+      font-size: .85rem;
+      padding: .6rem;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    button:hover {
+      background: var(--lime);
+      color: var(--black);
+    }
+
+    .resumen {
+      margin-top: 5rem;
+      text-align: center;
+    }
+
+    #lista {
+      color: #bbb;
+      margin-bottom: 1rem;
+    }
+
+    .total {
+      font-family: 'Bebas Neue';
+      font-size: 1.8rem;
+      color: var(--lime);
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--lime);
+      color: var(--black);
+      padding: .9rem 2rem;
+      border-radius: 100px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: .2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+    }
+
+    .resumen {
+        transition: transform .2s;
+    }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: .5rem;
+    }
+
+    .item-info {
+        font-size: .85rem;
+        color: #ccc;
+    }
+
+    .item-actions {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .item-actions button {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 6px;
+        font-size: .8rem;
+    }
