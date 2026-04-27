@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAINA Stickers — Gráfica personalizada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:    #0A0A0A;
+      --lime:     #C9F33A;
+      --white:    #FFFFFF;
+      --gray:     #141414;
+      --gray-mid: #1E1E1E;
+      --muted:    #777;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 62px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(201,243,58,.12);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      letter-spacing: .1em;
+      color: var(--lime);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,.7);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--lime); }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .nav-ig {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      color: var(--white);
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-ig:hover { color: var(--lime); }
+    .nav-wa {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      background: #25D366;
+      color: var(--white);
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 600;
+      padding: .42rem .9rem;
+      border-radius: 100px;
+      transition: opacity .2s, transform .2s;
+    }
+    .nav-wa:hover { opacity: .88; transform: translateY(-1px); }
+
+    /* HAMBURGER */
+    .nav-burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: .3rem;
+      background: none;
+      border: none;
+    }
+    .nav-burger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: all .3s;
+    }
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      top: 62px; left: 0; right: 0;
+      background: rgba(10,10,10,.97);
+      border-bottom: 1px solid rgba(201,243,58,.12);
+      padding: 1.5rem 2rem;
+      flex-direction: column;
+      gap: 1rem;
+      z-index: 99;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      color: rgba(255,255,255,.8);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: .5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: color .2s;
+    }
+    .nav-mobile a:hover { color: var(--lime); }
+    .nav-mobile a.wa-mobile {
+      color: #25D366;
+      border-bottom: none;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links, .nav-ig { display: none; }
+      .nav-burger { display: flex; }
+    }
+
+    /* WHATSAPP FLOTANTE */
+    .wa-float {
+      position: fixed;
+      bottom: 1.75rem;
+      right: 1.75rem;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      background: #25D366;
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .875rem;
+      padding: .75rem 1.25rem .75rem 1rem;
+      border-radius: 100px;
+      box-shadow: 0 4px 24px rgba(37,211,102,.4);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .wa-float:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 8px 32px rgba(37,211,102,.55);
+    }
+    .wa-float::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 100px;
+      background: rgba(37,211,102,.25);
+      animation: wapulse 2.4s ease-out infinite;
+      z-index: -1;
+    }
+    @keyframes wapulse {
+      0%   { transform: scale(1);   opacity: .6; }
+      70%  { transform: scale(1.18); opacity: 0; }
+      100% { transform: scale(1.18); opacity: 0; }
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 7rem 2rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -160px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(201,243,58,.10) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .avatar {
+      width: 128px; height: 128px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--lime);
+      box-shadow: 0 0 48px rgba(201,243,58,.25);
+      margin-bottom: 1.25rem;
+      position: relative; z-index: 1;
+    }
+    .hero-handle {
+      color: var(--muted);
+      font-size: .9rem;
+      letter-spacing: .06em;
+      margin-bottom: .4rem;
+      position: relative; z-index: 1;
+    }
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.8rem, 11vw, 7.5rem);
+      line-height: .92;
+      letter-spacing: .04em;
+      margin-bottom: 1.1rem;
+      position: relative; z-index: 1;
+    }
+    .hero-name em { color: var(--lime); font-style: normal; }
+    .hero-bio {
+      max-width: 400px;
+      color: #bbb;
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 2.2rem;
+      position: relative; z-index: 1;
+    }
+    .stats {
+      display: flex;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+      position: relative; z-index: 1;
+    }
+    .stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.1rem;
+      color: var(--lime);
+      line-height: 1;
+    }
+    .stat-lbl {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      margin-top: .2rem;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      background: var(--lime);
+      color: var(--black);
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .9rem 1.9rem;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+      position: relative; z-index: 1;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(201,243,58,.38);
+    }
+    .scroll-arrow {
+      position: absolute;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .35rem;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      animation: bob 2.2s ease-in-out infinite;
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      border: 1px solid rgba(255,255,255,.2);
+      color: var(--white);
+      padding: .8rem 1.6rem;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: .9rem;
+      margin-top: .7rem;
+      transition: .2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--lime);
+      color: var(--lime);
+    }
+    @keyframes bob {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(7px); }
+    }
+
+    /* PILLS */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      justify-content: center;
+      padding: 2.5rem 2rem;
+      border-top: 1px solid rgba(255,255,255,.05);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(201,243,58,.07);
+      border: 1px solid rgba(201,243,58,.18);
+      border-radius: 100px;
+      padding: .5rem 1.1rem;
+      font-size: .85rem;
+    }
+    .pill-icon { color: var(--lime); }
+
+    /* PRODUCTS */
+    .products {
+      background: var(--gray);
+      padding: 5rem 2rem;
+    }
+    .sec-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+    .sec-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      line-height: 1;
+      margin-bottom: .8rem;
+    }
+    .sec-sub {
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.7;
+      max-width: 460px;
+    }
+    .sec-header { text-align: center; margin-bottom: 3rem; }
+    .sec-header .sec-sub { margin: 0 auto; }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--gray-mid);
+      border: 1px solid rgba(201,243,58,.08);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+      transition: border-color .3s, transform .3s;
+    }
+    .card:hover {
+      border-color: rgba(201,243,58,.5);
+      transform: translateY(-5px);
+    }
+    .card-icon { font-size: 2.4rem; margin-bottom: .9rem; display: block; }
+    .card-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.55rem;
+      letter-spacing: .05em;
+      margin-bottom: .4rem;
+    }
+    .card-desc { font-size: .875rem; color: var(--muted); line-height: 1.65; }
+
+    /* GALLERY */
+    .gallery-wrap { padding: 5rem 0; }
+    .gallery-intro { text-align: center; padding: 0 2rem; margin-bottom: 2.5rem; }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    @media (max-width: 768px) { .gallery-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 480px) { .gallery-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .g-item {
+      aspect-ratio: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .g-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .4s, filter .4s;
+      display: block;
+    }
+    .g-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,10,10,.72);
+      display: flex;
+      align-items: flex-end;
+      padding: .75rem;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .g-overlay p {
+      font-size: .72rem;
+      color: var(--white);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .g-item:hover img { transform: scale(1.07); filter: brightness(.65); }
+    .g-item:hover .g-overlay { opacity: 1; }
+    .gallery-more { text-align: center; padding: 1.75rem 2rem 0; }
+    .gallery-more a {
+      color: var(--lime);
+      text-decoration: none;
+      font-size: .875rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+    }
+    .gallery-more a:hover { opacity: .7; }
+
+    /* CTA FINAL */
+    .cta-final {
+      background: var(--lime);
+      text-align: center;
+      padding: 5.5rem 2rem;
+    }
+    .cta-final .sec-label { color: rgba(0,0,0,.45); }
+    .cta-final .sec-title { color: var(--black); }
+    .cta-tagline { color: rgba(0,0,0,.55); font-size: .95rem; margin-bottom: 2rem; }
+    .btn-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      background: var(--black);
+      color: var(--lime);
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .9rem 1.9rem;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-dark:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(0,0,0,.3);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(201,243,58,.08);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--lime);
+      letter-spacing: .1em;
+      display: block;
+      margin-bottom: .4rem;
+    }
+    footer p { color: var(--muted); font-size: .82rem; line-height: 1.8; }
+    footer a { color: var(--lime); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      nav { padding: .85rem 1.2rem; }
+      .hero { padding: 6rem 1.5rem 4.5rem; }
+      .stats { gap: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#inicio" class="nav-logo">CAINA</a>
+  <ul class="nav-links">
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#productos">Productos</a></li>
+    <li><a href="#galeria">Galería</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" rel="noopener" class="nav-ig">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>
+      Instagram
+    </a>
+    <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="nav-wa">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+      WhatsApp
+    </a>
+    <button class="nav-burger" onclick="document.querySelector('.nav-mobile').classList.toggle('open')" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MENÚ MOBILE -->
+<div class="nav-mobile">
+  <a href="#inicio"    onclick="this.closest('.nav-mobile').classList.remove('open')">Inicio</a>
+  <a href="#productos" onclick="this.closest('.nav-mobile').classList.remove('open')">Productos</a>
+  <a href="#galeria"   onclick="this.closest('.nav-mobile').classList.remove('open')">Galería</a>
+  <a href="#contacto"  onclick="this.closest('.nav-mobile').classList.remove('open')">Contacto</a>
+  <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="wa-mobile">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    Escribinos al WhatsApp
+  </a>
+</div>
+
+<!-- BOTÓN FLOTANTE WHATSAPP -->
+<a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido%20%F0%9F%99%8C" target="_blank" rel="noopener" class="wa-float">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+  Escribinos
+</a>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <img src="assets/profile_pic.jpg" alt="CAINA logo" class="avatar">
+  <p class="hero-handle">@caina.stickers</p>
+  <h1 class="hero-name">CAINA<br><em>STICKERS</em></h1>
+  <p class="hero-bio">
+    Gráfica personalizada hecha con amor.<br>
+    📦 Envíos a todo el país &nbsp;·&nbsp; 📍 Zona Sur
+  </p>
+  <div class="stats">
+    <div>
+      <div class="stat-val">1.2K</div>
+      <div class="stat-lbl">Seguidores</div>
+    </div>
+    <div>
+      <div class="stat-val">42</div>
+      <div class="stat-lbl">Publicaciones</div>
+    </div>
+    <div>
+      <div class="stat-val">100%</div>
+      <div class="stat-lbl">Personalizado</div>
+    </div>
+  </div>
+  <a href="pedido.html" class="btn-primary">
+    Arma tu pedido!
+  </a>
+
+  <a href="https://ig.me/m/caina.stickers" target="_blank" rel="noopener" class="btn-secondary">
+    Consultanos por Instagram
+  </a>
+  <div class="scroll-arrow">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    ver más
+  </div>
+</section>
+
+<!-- PILLS -->
+<div class="pills">
+  <div class="pill"><span class="pill-icon">📦</span> Envíos a todo el país</div>
+  <div class="pill"><span class="pill-icon">✏️</span> 100% personalizados</div>
+  <div class="pill"><span class="pill-icon">⚡</span> Entrega rápida</div>
+  <div class="pill"><span class="pill-icon">💬</span> Consultas por DM</div>
+  <div class="pill"><span class="pill-icon">🎨</span> Tu diseño o el nuestro</div>
+</div>
+
+<!-- PRODUCTOS -->
+<section class="products" id="productos">
+  <div class="sec-header">
+    <p class="sec-label">Qué hacemos</p>
+    <h2 class="sec-title">Nuestros productos</h2>
+    <p class="sec-sub">Mandanos tu idea y la hacemos realidad. Todo hecho a medida.</p>
+  </div>
+  <div class="products-grid">
+    <div class="card">
+      <span class="card-icon">🎨</span>
+      <div class="card-name">Stickers</div>
+      <p class="card-desc">Diseños personalizados para decorar notebooks, termos, botones y más. Los hacemos según tu gusto.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">✨</span>
+      <div class="card-name">Vinilo UV</div>
+      <p class="card-desc">Textura 3D, colores intensos y relieve brillante. Se adhiere a casi cualquier superficie.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🩷</span>
+      <div class="card-name">Tattoos temporales</div>
+      <p class="card-desc">Ideales para eventos. 100% personalizados con tu diseño o cualquier idea que se te ocurra.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">📒</span>
+      <div class="card-name">Agendas</div>
+      <p class="card-desc">Tu agenda a tu medida: para estudio, trabajo, emprendimiento o uso diario. Vos elegís, nosotras la hacemos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<div class="gallery-wrap" id="galeria">
+  <div class="gallery-intro">
+    <p class="sec-label">Nuestro trabajo</p>
+    <h2 class="sec-title">Últimas creaciones</h2>
+  </div>
+  <div class="gallery-grid">
+    <div class="g-item">
+      <img src="assets/post_1.jpg" alt="Cómo hacer un pedido CAINA">
+      <div class="g-overlay"><p>Catálogo CAINA — cómo hacer un pedido</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_2.jpg" alt="Sticker CAINA">
+      <div class="g-overlay"><p>Que tengas un lindo día 🌟</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_3.jpg" alt="Tatuajes temporales CAINA">
+      <div class="g-overlay"><p>Tatuajes temporales personalizados 🩷</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_4.jpg" alt="Stickers CAINA">
+      <div class="g-overlay"><p>Diseños exclusivos para vos</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_5.jpg" alt="Vinilo UV CAINA">
+      <div class="g-overlay"><p>Vinilo UV: textura 3D y colores intensos ✨</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_6.jpg" alt="Stickers CAINA">
+      <div class="g-overlay"><p>Stickers para todos los gustos</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_7.jpg" alt="Stickers resistentes CAINA">
+      <div class="g-overlay"><p>Stickers que aguantan todo 😍</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_8.jpg" alt="Stickers de bandas CAINA">
+      <div class="g-overlay"><p>Tus bandas favoritas en versión sticker 🎸</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_9.jpg" alt="Agenda personalizada CAINA">
+      <div class="g-overlay"><p>Agendas armadas según tus gustos 📒</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_10.jpg" alt="Agendas 2026 CAINA">
+      <div class="g-overlay"><p>Agendas 2026 — empezá el año organizado 🗓️</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_11.jpg" alt="Stickers CAINA">
+      <div class="g-overlay"><p>Más creaciones personalizadas</p></div>
+    </div>
+    <div class="g-item">
+      <img src="assets/post_12.jpg" alt="Stickers CAINA">
+      <div class="g-overlay"><p>Más creaciones personalizadas</p></div>
+    </div>
+  </div>
+  <div class="gallery-more">
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" rel="noopener">Ver más en Instagram →</a>
+  </div>
+</div>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="contacto">
+  <p class="sec-label">¿Te interesa?</p>
+  <h2 class="sec-title">Hacemos tu idea<br>realidad</h2>
+  <p class="cta-tagline">Mandanos un mensaje y te armamos el diseño perfecto para vos.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido%20%F0%9F%99%8C" target="_blank" rel="noopener" class="btn-dark" style="background:#25D366;color:#fff;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+      Escribir al WhatsApp
+    </a>
+    <a href="https://ig.me/m/caina.stickers" target="_blank" rel="noopener" class="btn-dark">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>
+      Consultar por Instagram
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">CAINA</span>
+  <p>
+    Gráfica personalizada · Zona Sur, Argentina<br>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" rel="noopener">@caina.stickers</a>
+    &nbsp;·&nbsp;
+    <a href="https://wa.me/5491138454766" target="_blank" rel="noopener">+54 9 11 3845-4766</a>
+  </p>
+</footer>
+
+</body>
+</html>
