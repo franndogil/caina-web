@@ -1,85 +1,56 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Armar pedido | CAINA</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Armar pedido | CAINA</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/store.css">
-  <link rel="stylesheet" href="css/nav.css">
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/store.css">
+  </head>
 
-<body>
-<nav>
-  <a href="index.html" class="nav-logo">CAINA</a>
+  <body>
+    <nav>
+      <a href="index.html" class="nav-logo">CAINA</a>
 
-  <ul class="nav-links"></ul>
+      <ul class="nav-links"></ul>
 
-  <div class="nav-right">
-    <a href="index.html" class="nav-back">← Volver</a>
-  </div>
-</nav>
+      <div class="nav-right">
+        <a href="index.html" class="nav-back">← Volver</a>
+      </div>
+    </nav>
 
-<section class="products">
+    <section class="products">
 
-  <div class="sec-header">
-    <p class="sec-label">CAINA</p>
-    <h2 class="sec-title">Armá tu pedido</h2>
-    <p class="sec-sub">Seleccioná lo que quieras y te lo preparamos.</p>
-  </div>
+      <div class="sec-header">
+        <p class="sec-label">CAINA</p>
+        <h2 class="sec-title">Armá tu pedido</h2>
+        <p class="sec-sub">Seleccioná lo que quieras y te lo preparamos.</p>
+      </div>
 
-  <div class="products-grid">
+      <div class="products-grid" id="productos"></div>
 
-    <div class="card">
-      <div class="card-name">Stickers</div>
-      <p class="card-desc">Elegí el pack que quieras.</p>
-      <div id="stickers-list"></div>
-      <button onclick="agregar('Stickers','Pack básico',2500)">Pack básico — $2.500</button>
-      <button onclick="agregar('Stickers','Pack personalizado',3500)">Pack personalizado — $3.500</button>
-      <button onclick="agregar('Stickers','Para negocio',5000)">Para negocio — $5.000</button>
+      <div class="resumen">
+        <h2 class="sec-title">Tu pedido</h2>
+        <div id="lista">No hay productos todavía</div>
+        <div id="total" class="total"></div>
+
+        <a href="#" onclick="enviarPedido()" class="btn-primary">
+          Enviar por WhatsApp
+        </a>
+      </div>
+
+    </section>
+
+    <script src="js/carrito.js"></script>
+    <script src="js/catalogo.js"></script>
+
+    <div id="modal-img" class="modal-img">
+      <span class="cerrar" onclick="cerrarImagen()">×</span>
+      <img id="modal-contenido">
     </div>
-
-    <div class="card">
-      <div class="card-name">Vinilo UV</div>
-      <p class="card-desc">Opciones disponibles.</p>
-
-      <button onclick="agregar('Vinilo UV','Logo simple',4000)">Logo simple — $4.000</button>
-      <button onclick="agregar('Vinilo UV','Full color',6000)">Full color — $6.000</button>
-    </div>
-
-    <div class="card">
-      <div class="card-name">Tattoos</div>
-      <p class="card-desc">Para eventos o uso personal.</p>
-
-      <button onclick="agregar('Tattoos','Pack evento',4500)">Pack evento — $4.500</button>
-      <button onclick="agregar('Tattoos','Diseño chico',2000)">Diseño chico — $2.000</button>
-    </div>
-
-    <div class="card">
-      <div class="card-name">Agendas</div>
-      <p class="card-desc">Elegí tu estilo.</p>
-
-      <button onclick="agregar('Agendas','Aesthetic',7000)">Aesthetic — $7.000</button>
-      <button onclick="agregar('Agendas','Minimalista',6500)">Minimalista — $6.500</button>
-    </div>
-
-  </div>
-
-  <div class="resumen">
-    <h2 class="sec-title">Tu pedido</h2>
-    <div id="lista">No hay productos todavía</div>
-    <div id="total" class="total"></div>
-
-    <a href="#" onclick="enviarPedido()" class="btn-primary">
-      Enviar por WhatsApp
-    </a>
-  </div>
-
-</section>
-
-<script src="js/carrito.js"></script>
-<script src="js/catalogo.js"></script>
-</body>
+  </body>
 </html>

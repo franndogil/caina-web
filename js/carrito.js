@@ -88,7 +88,7 @@ function enviarPedido() {
   carrito.forEach(item => {
     const sub = item.precio * item.cantidad;
     total += sub;
-    mensaje += `- ${item.nombre}: ${item.detalle} x${item.cantidad} ($${format(sub)})\n`;
+    mensaje += `- ${item.nombre}: ${item.detalle} x${item.cantidad} unidades ($${format(sub)})\n`;
   });
 
   mensaje += `\nTotal: $${format(total)}`;
