@@ -7,8 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/nav.css">
 </head>
 <body>
 
@@ -22,14 +22,7 @@
     <li><a href="#contacto">Contacto</a></li>
   </ul>
   <div class="nav-right">
-    <a href="https://www.instagram.com/caina.stickers/" target="_blank" rel="noopener" class="nav-ig">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>
-      Instagram
-    </a>
-    <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="nav-wa">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-      WhatsApp
-    </a>
+    <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="nav-wa"><img src="/assets/icons/whatsapp_white.png" alt="">Whatsapp</a>
     <button class="nav-burger" onclick="document.querySelector('.nav-mobile').classList.toggle('open')" aria-label="Menú">
       <span></span><span></span><span></span>
     </button>
@@ -40,6 +33,7 @@
 <div class="nav-mobile">
   <a href="#inicio"    onclick="this.closest('.nav-mobile').classList.remove('open')">Inicio</a>
   <a href="#productos" onclick="this.closest('.nav-mobile').classList.remove('open')">Productos</a>
+  <a href="/pedido.html" onclick="this.closest('.nav-mobile').classList.remove('open')">Armá tu pedido</a>
   <a href="#galeria"   onclick="this.closest('.nav-mobile').classList.remove('open')">Galería</a>
   <a href="#contacto"  onclick="this.closest('.nav-mobile').classList.remove('open')">Contacto</a>
   <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="wa-mobile">
@@ -49,36 +43,30 @@
 </div>
 
 <!-- BOTÓN FLOTANTE WHATSAPP -->
-<a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido%20%F0%9F%99%8C" target="_blank" rel="noopener" class="wa-float">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-  Escribinos
-</a>
+<a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" rel="noopener" class="wa-float"><img src="/assets/icons/whatsapp_white.png" alt=""></a>
 
 <!-- HERO -->
 <section class="hero" id="inicio">
-  <img src="assets/profile_pic.jpg" alt="CAINA logo" class="avatar">
-  <p class="hero-handle">@caina.stickers</p>
+  <img src="assets/profile_pic.png" alt="CAINA logo" class="avatar">
   <h1 class="hero-name">CAINA<br><em>STICKERS</em></h1>
   <p class="hero-bio">
-    Gráfica personalizada hecha con amor.<br>
-    📦 Envíos a todo el país &nbsp;·&nbsp; 📍 Zona Sur
   </p>
   <div class="stats">
-    <div>
-      <div class="stat-val">1.2K</div>
-      <div class="stat-lbl">Seguidores</div>
-    </div>
-    <div>
-      <div class="stat-val">42</div>
-      <div class="stat-lbl">Publicaciones</div>
-    </div>
     <div>
       <div class="stat-val">100%</div>
       <div class="stat-lbl">Personalizado</div>
     </div>
+    <div>
+      <div class="stat-val">Envíos</div>
+      <div class="stat-lbl">A todo el país</div>
+    </div>
+    <div>
+      <div class="stat-val">Entrega</div>
+      <div class="stat-lbl">Inmediata</div>
+    </div>
   </div>
   <a href="pedido.html" class="btn-primary">
-    Arma tu pedido!
+    Armá tu pedido!
   </a>
 
   <a href="https://ig.me/m/caina.stickers" target="_blank" rel="noopener" class="btn-secondary">
@@ -95,7 +83,6 @@
   <div class="pill"><span class="pill-icon">📦</span> Envíos a todo el país</div>
   <div class="pill"><span class="pill-icon">✏️</span> 100% personalizados</div>
   <div class="pill"><span class="pill-icon">⚡</span> Entrega rápida</div>
-  <div class="pill"><span class="pill-icon">💬</span> Consultas por DM</div>
   <div class="pill"><span class="pill-icon">🎨</span> Tu diseño o el nuestro</div>
 </div>
 
@@ -128,6 +115,9 @@
       <p class="card-desc">Tu agenda a tu medida: para estudio, trabajo, emprendimiento o uso diario. Vos elegís, nosotras la hacemos.</p>
     </div>
   </div>
+  <a href="/pedido.html" class="btn-producto">
+    Ver más
+  </a>
 </section>
 
 <!-- GALLERY -->
@@ -197,7 +187,7 @@
   <h2 class="sec-title">Hacemos tu idea<br>realidad</h2>
   <p class="cta-tagline">Mandanos un mensaje y te armamos el diseño perfecto para vos.</p>
   <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido%20%F0%9F%99%8C" target="_blank" rel="noopener" class="btn-dark" style="background:#25D366;color:#fff;">
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" rel="noopener" class="btn-dark" style="background:#25D366;color:#fff;">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
       Escribir al WhatsApp
     </a>
@@ -210,13 +200,17 @@
 
 <!-- FOOTER -->
 <footer>
-  <span class="footer-logo">CAINA</span>
-  <p>
-    Gráfica personalizada · Zona Sur, Argentina<br>
-    <a href="https://www.instagram.com/caina.stickers/" target="_blank" rel="noopener">@caina.stickers</a>
-    &nbsp;·&nbsp;
-    <a href="https://wa.me/5491138454766" target="_blank" rel="noopener">+54 9 11 3845-4766</a>
-  </p>
+  <div class="footer-left">
+    <span class="footer-logo">CAINA</span>
+    <p>Gráfica personalizada · Zona Sur, Argentina</p>
+  </div>
+  <div class="footer-social">
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" class="social-btn" title="WhatsApp"><img src="" alt=""></a>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"><img src="" alt=""></a>
+  </div>
+  <div class="powered-by">
+    <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+  </div>
 </footer>
 
 </body>

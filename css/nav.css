@@ -13,7 +13,7 @@
       border-bottom: 1px solid rgba(201,243,58,.12);
     }
     .nav-logo {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: 'Babydoll';
       font-size: 1.9rem;
       letter-spacing: .1em;
       color: var(--lime);
@@ -82,8 +82,8 @@
       border-bottom: 1px solid rgba(201,243,58,.12);
     }
     .nav-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.9rem;
+      font-family: 'Babydoll';
+      font-size: 2rem;
       letter-spacing: .1em;
       color: var(--lime);
       text-decoration: none;
@@ -98,7 +98,8 @@
     .nav-links a {
       color: rgba(255,255,255,.7);
       text-decoration: none;
-      font-size: .85rem;
+      font-family: 'Babydoll';
+      font-size: 1.2rem;
       font-weight: 500;
       letter-spacing: .04em;
       transition: color .2s;
@@ -110,17 +111,9 @@
       gap: 1rem;
       flex-shrink: 0;
     }
-    .nav-ig {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      color: var(--white);
-      text-decoration: none;
-      font-size: .82rem;
-      font-weight: 500;
-      transition: color .2s;
+    .nav-right img{
+      width: 25px;
     }
-    .nav-ig:hover { color: var(--lime); }
     .nav-wa {
       display: flex;
       align-items: center;
@@ -163,7 +156,10 @@
       padding: .3rem;
       background: none;
       border: none;
+      width: auto;
+      margin: 0;
     }
+    .nav-burger:hover { background: none; color: inherit; }
     .nav-burger span {
       display: block;
       width: 22px; height: 2px;
@@ -186,7 +182,8 @@
     .nav-mobile a {
       color: rgba(255,255,255,.8);
       text-decoration: none;
-      font-size: 1rem;
+      font-family: 'Babydoll';
+      font-size: 1.1rem;
       font-weight: 500;
       padding: .5rem 0;
       border-bottom: 1px solid rgba(255,255,255,.06);
@@ -204,4 +201,11 @@
     @media (max-width: 768px) {
       .nav-links, .nav-ig { display: none; }
       .nav-burger { display: flex; }
+    }
+
+    @font-face {
+      font-family: 'Babydoll';
+      src: url(../assets/fonts/Baby\ Doll.ttf) format('truetype');
+      ont-weight: normal;
+      font-style: normal;
     }

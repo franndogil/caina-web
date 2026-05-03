@@ -8,30 +8,53 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/landing.css">
     <link rel="stylesheet" href="css/store.css">
+    <link rel="stylesheet" href="css/nav.css">
   </head>
 
   <body>
+    <!-- NAV -->
     <nav>
       <a href="index.html" class="nav-logo">CAINA</a>
-
-      <ul class="nav-links"></ul>
-
+      <ul class="nav-links">
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="index.html#productos">Productos</a></li>
+        <li><a href="index.html#galeria">Galería</a></li>
+        <li><a href="index.html#contacto">Contacto</a></li>
+      </ul>
       <div class="nav-right">
-        <a href="index.html" class="nav-back">← Volver</a>
+        <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="nav-wa"><img src="/assets/icons/whatsapp_white.png" alt="">Whatsapp</a>
+        <button class="nav-burger" onclick="document.querySelector('.nav-mobile').classList.toggle('open')" aria-label="Menú">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </nav>
+
+    <!-- MENÚ MOBILE -->
+    <div class="nav-mobile">
+      <a href="/index.html#inicio"    onclick="this.closest('.nav-mobile').classList.remove('open')">Inicio</a>
+      <a href="/index.html#productos" onclick="this.closest('.nav-mobile').classList.remove('open')">Productos</a>
+      <a href="/pedido.html" onclick="this.closest('.nav-mobile').classList.remove('open')">Armá tu pedido</a>
+      <a href="/index.html#galeria"   onclick="this.closest('.nav-mobile').classList.remove('open')">Galería</a>
+      <a href="/index.html#contacto"  onclick="this.closest('.nav-mobile').classList.remove('open')">Contacto</a>
+      <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="wa-mobile">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L.057 23.5l5.798-1.452A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.027-1.38l-.36-.214-3.44.862.924-3.367-.235-.374A9.817 9.817 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Escribinos al WhatsApp
+      </a>
+    </div>
 
     <section class="products">
 
       <div class="sec-header">
-        <p class="sec-label">CAINA</p>
         <h2 class="sec-title">Armá tu pedido</h2>
         <p class="sec-sub">Seleccioná lo que quieras y te lo preparamos.</p>
       </div>
 
-      <div class="products-grid" id="productos"></div>
+      <!-- Populado dinámicamente por catalogo.js -->
+      <div id="productos" class="products-grid">
+        <p style="color: var(--muted); text-align: center; grid-column: 1 / -1; padding: 2rem 0;">Cargando productos…</p>
+      </div>
 
       <div class="resumen">
         <h2 class="sec-title">Tu pedido</h2>
@@ -44,13 +67,45 @@
       </div>
 
     </section>
-
-    <script src="js/carrito.js"></script>
-    <script src="js/catalogo.js"></script>
-
     <div id="modal-img" class="modal-img">
       <span class="cerrar" onclick="cerrarImagen()">×</span>
       <img id="modal-contenido">
     </div>
-  </body>
+
+    <!-- MODAL SELECTOR DE STICKER -->
+    <div id="sticker-modal" class="sticker-modal" role="dialog" aria-modal="true">
+      <div id="sticker-modal-body" class="sticker-modal-body"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-left">
+        <span class="footer-logo">CAINA</span>
+        <p>Gráfica personalizada · Zona Sur, Argentina</p>
+      </div>
+      <div class="footer-social">
+        <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" class="social-btn" title="WhatsApp"><img src="" alt=""></a>
+        <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"><img src="" alt=""></a>
+      </div>
+      <div class="powered-by">
+        <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+      </div>
+    </footer>
+
+    <!-- BOTÓN FLOTANTE IR AL CARRITO -->
+    <button class="carrito-float" onclick="irAlCarrito()" aria-label="Ver pedido">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      Ver pedido
+      <span class="carrito-float-badge" id="carrito-badge"></span>
+    </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/catalogo.js"></script>
+  <script src="/js/carrito.js"></script>
+
+</body>
 </html>
