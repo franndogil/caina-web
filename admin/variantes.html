@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Variantes - Panel de Administración</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .stock-input { width: 70px; }
+        #filters { margin-bottom: 20px; }
+        #filters input { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Centro de Control de Variantes</h1>
+        <a href="panel.html">Volver al Panel Principal</a>
+    </header>
+
+    <main>
+        <div id="filters">
+            <input type="text" id="filter-text" placeholder="Buscar por nombre...">
+        </div>
+        
+        <table id="variants-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Variante (Material / Tamaño)</th>
+                    <th>Precio Calculado</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="variants-list">
+                <!-- Las filas de variantes se cargarán aquí dinámicamente -->
+            </tbody>
+        </table>
+    </main>
+    
+    <script type="module" src="js/variantes.js"></script>
+</body>
+</html>

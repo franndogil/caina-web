@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login - Panel de Administración</title>
+        <link rel="stylesheet" href="../public/css/base.css"> <!-- Opcional: Reutilizar estilos base -->
+        <style>
+            /* Estilos rápidos para el login */
+            body { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+            .login-container { padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .form-group { margin-bottom: 1rem; }
+            label { display: block; margin-bottom: 0.5rem; }
+            input { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; }
+            button { width: 100%; padding: 0.75rem; border: none; background-color: #007bff; color: white; font-size: 1rem; border-radius: 4px; cursor: pointer; }
+            .error-message { color: red; margin-top: 1rem; text-align: center; }
+        </style>
+    </head>
+    <body>
+
+        <div class="login-container">
+            <h2>Panel de Administración</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Ingresar</button>
+            </form>
+            <div id="error-message" class="error-message"></div>
+        </div>
+
+        <!-- 1. Importamos el cliente de Supabase desde su CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        
+        <!-- 2. Enlazamos nuestro archivo de lógica de autenticación (que crearemos ahora) -->
+        <script type="module" src="js/auth.js"></script>
+
+    </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Variante</title>
+    <link rel="stylesheet" href="css/styles.css"> <!-- Reutilizamos los estilos -->
+    <style>
+        .form-group.multi-select { border: 1px solid #ccc; padding: 1rem; border-radius: 4px; }
+        .form-group.multi-select label { font-weight: bold; }
+        .checkbox-group { display: flex; flex-direction: column; max-height: 150px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <!-- El enlace de volver lo generará JS -->
+    <a id="back-link" href="#">&larr; Volver al Producto</a>
+    
+    <h1 id="form-title">Editar Variante</h1>
+
+    <form id="variant-form">
+        <div class="form-group">
+            <label for="stock">Stock</label>
+            <input type="number" id="stock" required>
+        </div>
+
+        <!-- Sección para seleccionar Materiales (Muchos a Muchos) -->
+        <div class="form-group multi-select">
+            <label>Materiales</label>
+            <div id="materials-checkboxes" class="checkbox-group">
+                Cargando materiales...
+            </div>
+        </div>
+        
+        <!-- Sección para seleccionar Tamaños (Muchos a Muchos) -->
+        <div class="form-group multi-select">
+            <label>Tamaños</label>
+            <div id="sizes-checkboxes" class="checkbox-group">
+                Cargando tamaños...
+            </div>
+        </div>
+
+        <button type="submit">Guardar Cambios en Variante</button>
+    </form>
+
+    <div id="feedback-message" class="feedback"></div>
+
+    <script type="module" src="js/form-variante.js"></script>
+</body>
+</html>
