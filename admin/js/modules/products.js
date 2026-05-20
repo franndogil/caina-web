@@ -8,12 +8,24 @@ export async function initProducts() {
     window.editProduct = (id) => window.location.href = `form-producto.html?id=${id}`;
     window.deleteProduct = async (id) => {
         if (confirm(`¿Eliminar producto ID ${id}?`)) {
+            // Obtener paths de imágenes antes de borrar el producto
+            const { data: imagenes } = await supabase
+                .from('imagen_producto')
+                .select('path_imagen')
+                .eq('id_producto', id);
+
             const { error } = await supabase.from('producto').delete().eq('id_producto', id);
-            if (error) { alert(`Error eliminando producto: ${error.message}`); }
-            else {
-                alert('Producto eliminado.');
-                await loadProducts();
+            if (error) { alert(`Error eliminando producto: ${error.message}`); return; }
+
+            // Borrar archivos del bucket después de confirmar que el producto se eliminó
+            if (imagenes && imagenes.length > 0) {
+                const paths = imagenes.map(img => img.path_imagen);
+                const { error: storageError } = await supabase.storage.from('productos').remove(paths);
+                if (storageError) console.error('Error eliminando imágenes del storage:', storageError);
             }
+
+            alert('Producto eliminado.');
+            await loadProducts();
         }
     };
 

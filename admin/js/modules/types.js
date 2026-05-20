@@ -1,46 +1,37 @@
 import { supabase } from '../auth.js';
+import { showToast } from '../toast.js';
 
-// 1. Obtenemos los elementos del DOM que este módulo necesita
 const typesList = document.getElementById('types-list');
-const addTypeForm = document.getElementById('add-type-form');
-const newTypeNameInput = document.getElementById('new-type-name');
+const addTypeBtn = document.getElementById('add-type-btn');
 
-// 2. La función PÚBLICA que el orquestador llamará
+const modal = document.getElementById('type-modal');
+const modalTitle = document.getElementById('type-modal-title');
+const modalNameInput = document.getElementById('type-modal-name');
+const modalSizesContainer = document.getElementById('type-modal-sizes');
+const modalMaterialsContainer = document.getElementById('type-modal-materials');
+const modalSaveBtn = document.getElementById('type-modal-save');
+const modalCloseBtn = document.getElementById('type-modal-close');
+
+let activeTipoId = null;
+
 export async function initTypes() {
-    // Cuando el módulo se inicie, queremos...
-    
-    // ...cargar la lista de tipos por primera vez.
     await loadTypes();
 
-    // ...y escuchar cuando el usuario quiera añadir un nuevo tipo.
-    addTypeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nombreTipo = newTypeNameInput.value.trim();
-
-        if (nombreTipo) {
-            await createType(nombreTipo);
-        }
-    });
-
-    // ...y escuchar los clics en los botones de "modificar" y "eliminar".
-    // (Usaremos delegación de eventos para esto, es más eficiente).
+    addTypeBtn.addEventListener('click', () => openModal(null, null));
     typesList.addEventListener('click', handleListClick);
+    modalCloseBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    modalSaveBtn.addEventListener('click', saveType);
 }
 
-
-// --- A PARTIR DE AQUÍ, SON LAS FUNCIONES "PRIVADAS" DEL MÓDULO ---
-// (No se exportan, solo se usan dentro de este archivo)
-
-// Función para LEER (Read) los tipos de la BBDD y pintarlos en la lista
 async function loadTypes() {
-    // Aquí irá la lógica para hacer el SELECT y generar el HTML
     const { data: tipos, error } = await supabase.from('tipo').select('*').order('id_tipo');
-    if(error) {console.error('Error al cargar los tipos:', error); return; }
+    if (error) { console.error('Error al cargar los tipos:', error); return; }
 
-    typesList.innerHTML = ''; // Limpiamos la lista antes de llenarla
+    typesList.innerHTML = '';
     tipos.forEach(tipo => {
         const li = document.createElement('li');
-        li.dataset.id = tipo.id_tipo; // Guardamos el ID en un atributo data
+        li.dataset.id = tipo.id_tipo;
         li.innerHTML = `
             <span class="type-name">${tipo.nombre_tipo}</span>
             <div class="actions">
@@ -49,86 +40,146 @@ async function loadTypes() {
             </div>
         `;
         typesList.appendChild(li);
-    })
+    });
 }
 
-// Función para CREAR (Create) un nuevo tipo
-async function createType(nombre) {
-    // Aquí irá la lógica del INSERT
-    const { error } = await supabase.from('tipo').insert({ nombre_tipo: nombre });
-    if (error){
-        alert('Error al crear el tipo: ' + error.message);
-    } else{
-        newTypeNameInput.value = ''; // Limpiamos el input
-        await loadTypes(); // Recargamos la lista para mostrar el nuevo tipo
+async function openModal(tipoId, tipoNombre) {
+    activeTipoId = tipoId;
+
+    modalNameInput.value = tipoNombre || '';
+    modalTitle.textContent = tipoId ? `Modificar — ${tipoNombre}` : 'Nuevo Tipo de Producto';
+    modalSaveBtn.textContent = 'Guardar Tipo';
+    modalSaveBtn.disabled = false;
+
+    modalSizesContainer.innerHTML = '<p style="opacity:0.5;font-size:.85em;">Cargando...</p>';
+    modalMaterialsContainer.innerHTML = '<p style="opacity:0.5;font-size:.85em;">Cargando...</p>';
+    modal.style.display = 'flex';
+
+    const [
+        { data: allSizes },
+        { data: allMaterials },
+        { data: existingSizes },
+        { data: existingMaterials }
+    ] = await Promise.all([
+        supabase.from('tamanio').select('*'),
+        supabase.from('material').select('*'),
+        tipoId ? supabase.from('tipo_tamanio').select('id_tamanio').eq('id_tipo', tipoId) : { data: [] },
+        tipoId ? supabase.from('tipo_material').select('id_material').eq('id_tipo', tipoId) : { data: [] }
+    ]);
+
+    allSizes.sort((a, b) => {
+        if (a.unidad !== b.unidad) return a.unidad.localeCompare(b.unidad);
+        const getVal = v => v.includes('x')
+            ? v.split('x').reduce((acc, n) => acc * parseFloat(n), 1)
+            : parseFloat(v);
+        return getVal(a.valor) - getVal(b.valor);
+    });
+
+    const checkedSizeIds = new Set((existingSizes || []).map(r => r.id_tamanio));
+    const checkedMaterialIds = new Set((existingMaterials || []).map(r => r.id_material));
+
+    modalSizesContainer.innerHTML = '';
+    allSizes.forEach(s => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="checkbox" value="${s.id_tamanio}" ${checkedSizeIds.has(s.id_tamanio) ? 'checked' : ''}>
+            ${s.valor}${s.unidad ? ' ' + s.unidad : ''}
+        `;
+        modalSizesContainer.appendChild(label);
+    });
+
+    modalMaterialsContainer.innerHTML = '';
+    allMaterials.forEach(m => {
+        const label = document.createElement('label');
+        label.innerHTML = `
+            <input type="checkbox" value="${m.id_material}" ${checkedMaterialIds.has(m.id_material) ? 'checked' : ''}>
+            ${m.nombre_material}
+        `;
+        modalMaterialsContainer.appendChild(label);
+    });
+}
+
+function closeModal() {
+    modal.style.display = 'none';
+    activeTipoId = null;
+}
+
+async function saveType() {
+    const nombre = modalNameInput.value.trim();
+    if (!nombre) { alert('El nombre del tipo es obligatorio.'); return; }
+
+    modalSaveBtn.disabled = true;
+    modalSaveBtn.textContent = 'Guardando...';
+
+    const checkedSizeIds = Array.from(modalSizesContainer.querySelectorAll('input:checked')).map(cb => Number(cb.value));
+    const checkedMaterialIds = Array.from(modalMaterialsContainer.querySelectorAll('input:checked')).map(cb => Number(cb.value));
+
+    try {
+        let tipoId = activeTipoId;
+
+        if (tipoId) {
+            const { error } = await supabase.from('tipo').update({ nombre_tipo: nombre }).eq('id_tipo', tipoId);
+            if (error) throw error;
+        } else {
+            const { data, error } = await supabase.from('tipo').insert({ nombre_tipo: nombre }).select().single();
+            if (error) throw error;
+            tipoId = data.id_tipo;
+        }
+
+        await supabase.from('tipo_tamanio').delete().eq('id_tipo', tipoId);
+        await supabase.from('tipo_material').delete().eq('id_tipo', tipoId);
+
+        if (checkedSizeIds.length > 0) {
+            const { error } = await supabase.from('tipo_tamanio').insert(
+                checkedSizeIds.map(id => ({ id_tipo: tipoId, id_tamanio: id }))
+            );
+            if (error) throw error;
+        }
+
+        if (checkedMaterialIds.length > 0) {
+            const { error } = await supabase.from('tipo_material').insert(
+                checkedMaterialIds.map(id => ({ id_tipo: tipoId, id_material: id }))
+            );
+            if (error) throw error;
+        }
+
+        const wasEditing = !!activeTipoId;
+        closeModal();
+        await loadTypes();
+        window.dispatchEvent(new CustomEvent('catalog:changed'));
+        showToast(wasEditing ? `Tipo "${nombre}" actualizado` : `Tipo "${nombre}" creado`);
+
+    } catch (err) {
+        alert('Error al guardar: ' + err.message);
+        modalSaveBtn.disabled = false;
+        modalSaveBtn.textContent = 'Guardar Tipo';
     }
 }
 
 async function deleteType(id) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el tipo ID ${id}?`)) {
+    if (confirm('¿Estás seguro de que querés eliminar este tipo?')) {
         const { error } = await supabase.from('tipo').delete().eq('id_tipo', id);
-        
-        if (error) {
-            alert(`Error al eliminar: ${error.message}`);
-        } else {
+        if (error) { alert(`Error al eliminar: ${error.message}`); }
+        else {
             await loadTypes();
+            window.dispatchEvent(new CustomEvent('catalog:changed'));
         }
     }
 }
 
-async function updateType(id, nuevoNombre) {
-    const { error } = await supabase
-        .from('tipo')
-        .update({ nombre_tipo: nuevoNombre })
-        .eq('id_tipo', id);
-
-    if (error) {
-        alert(`Error al actualizar: ${error.message}`);
-    } else {
-        await loadTypes(); // Refrescamos para ver el cambio
-    }
-}
-
-// Función que maneja los clics en la lista
-function handleListClick(event) {
+async function handleListClick(event) {
     const target = event.target;
-    const li = target.closest('li'); // Busca el <li> padre más cercano
-    if (!li) return; // Si no hay <li>, no hacemos nada
+    const li = target.closest('li');
+    if (!li) return;
 
     const id = li.dataset.id;
 
-    // Si el botón pulsado tiene la clase 'delete-btn'
-    if (target.classList.contains('delete-btn')) {
-        deleteType(id);
-    }
-
-    // Si el botón pulsado tiene la clase 'edit-btn'
     if (target.classList.contains('edit-btn')) {
-        // Aquí empieza la lógica de "modificar"
-        const span = li.querySelector('.type-name');
-        const currentName = span.textContent;
-        
-        // Reemplazamos el texto por un input y dos botones nuevos
-        li.innerHTML = `
-            <input type="text" value="${currentName}" class="edit-input">
-            <div class="actions">
-                <button class="save-btn">Guardar</button>
-                <button class="cancel-btn">Cancelar</button>
-            </div>
-        `;
+        const nombre = li.querySelector('.type-name').textContent;
+        await openModal(id, nombre);
     }
 
-    // Si el botón pulsado es el de "Guardar"
-    if (target.classList.contains('save-btn')) {
-        const input = li.querySelector('.edit-input');
-        const newName = input.value.trim();
-        if (newName) {
-            updateType(id, newName);
-        }
-    }
-
-    // Si el botón pulsado es el de "Cancelar"
-    if (target.classList.contains('cancel-btn')) {
-        loadTypes(); // La forma más fácil de cancelar es simplemente recargar la lista
+    if (target.classList.contains('delete-btn')) {
+        await deleteType(id);
     }
 }

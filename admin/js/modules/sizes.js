@@ -1,4 +1,5 @@
 import { supabase } from '../auth.js';
+import { showToast } from '../toast.js';
 
 const sizesList = document.getElementById('sizes-list');
 const addSizeForm = document.getElementById('add-size-form');
@@ -11,58 +12,35 @@ export async function initSizes() {
     sizesList.addEventListener('click', handleListClick);
 }
 
-async function loadSizes() {
-    const { data: sizes, error } = await supabase
-        .from('tamanio')
-        .select('*');
+function sizeDisplay(valor, unidad) {
+    return unidad ? `${valor} ${unidad}` : valor;
+}
 
-    if (error) {
-        console.error('Error cargando tamaños:', error);
-        return;
-    }
+async function loadSizes() {
+    const { data: sizes, error } = await supabase.from('tamanio').select('*');
+    if (error) { console.error('Error cargando tamaños:', error); return; }
 
     sizes.sort((a, b) => {
-        // Primero por unidad
-        if (a.unidad !== b.unidad) {
-            return a.unidad.localeCompare(b.unidad);
-        }
-
-        function getValue(valor) {
-            valor = valor.trim();
-
-            // Si tiene formato "ancho x alto"
-            if (valor.includes('x')) {
-                const [ancho, alto] = valor
-                    .split('x')
-                    .map(n => parseFloat(n.trim()));
-
-                return ancho * alto;
-            }
-
-            // Si es un número normal
-            return parseFloat(valor);
-        }
-
-        return getValue(a.valor) - getValue(b.valor);
+        if ((a.unidad || '') !== (b.unidad || '')) return (a.unidad || '').localeCompare(b.unidad || '');
+        const getVal = v => v.trim().includes('x')
+            ? v.trim().split('x').reduce((acc, n) => acc * parseFloat(n), 1)
+            : parseFloat(v);
+        return getVal(a.valor) - getVal(b.valor);
     });
 
     sizesList.innerHTML = '';
-
     sizes.forEach(size => {
         const li = document.createElement('li');
         li.dataset.id = size.id_tamanio;
-
+        li.dataset.valor = size.valor;
+        li.dataset.unidad = size.unidad || '';
         li.innerHTML = `
-            <span class="text">
-                <strong>Valor:</strong> ${size.valor} | 
-                <strong>Unidad:</strong> ${size.unidad || 'N/A'}
-            </span>
+            <span class="text">${sizeDisplay(size.valor, size.unidad)}</span>
             <div class="actions">
                 <button class="edit-btn">Modificar</button>
                 <button class="delete-btn">Eliminar</button>
             </div>
         `;
-
         sizesList.appendChild(li);
     });
 }
@@ -71,7 +49,7 @@ async function handleCreate(e) {
     e.preventDefault();
     const valor = newSizeValueInput.value.trim();
     const unidad = newSizeUnitInput.value.trim();
-    if (!valor) { alert("El valor es obligatorio."); return; }
+    if (!valor) { alert('El valor es obligatorio.'); return; }
 
     const { error } = await supabase.from('tamanio').insert([{ valor, unidad }]);
     if (error) { alert(`Error creando tamaño: ${error.message}`); }
@@ -79,6 +57,8 @@ async function handleCreate(e) {
         newSizeValueInput.value = '';
         newSizeUnitInput.value = '';
         await loadSizes();
+        window.dispatchEvent(new CustomEvent('catalog:changed'));
+        showToast(`Tamaño "${sizeDisplay(valor, unidad)}" agregado`);
     }
 }
 
@@ -87,16 +67,16 @@ function handleListClick(event) {
     const li = target.closest('li');
     if (!li) return;
     const id = li.dataset.id;
+    const valor = li.dataset.valor;
+    const unidad = li.dataset.unidad;
+    const display = sizeDisplay(valor, unidad);
 
-    if (target.classList.contains('delete-btn')) { deleteSize(id); }
+    if (target.classList.contains('delete-btn')) { deleteSize(id, display); }
+
     if (target.classList.contains('edit-btn')) {
-        const text = li.querySelector('.text').innerText;
-        const currentValor = text.split('|')[0].replace('Valor:', '').trim();
-        const currentUnidad = text.split('|')[1].replace('Unidad:', '').trim();
-        
         li.innerHTML = `
-            <input type="text" value="${currentValor}" placeholder="Valor" class="edit-valor">
-            <input type="text" value="${currentUnidad === 'N/A' ? '' : currentUnidad}" placeholder="Unidad" class="edit-unidad">
+            <input type="text" value="${valor}" placeholder="Valor" class="edit-valor">
+            <input type="text" value="${unidad}" placeholder="Unidad (ej: cm, cc)" class="edit-unidad">
             <div class="actions">
                 <button class="save-btn">Guardar</button>
                 <button class="cancel-btn">Cancelar</button>
@@ -104,23 +84,31 @@ function handleListClick(event) {
         `;
     }
     if (target.classList.contains('save-btn')) {
-        const valor = li.querySelector('.edit-valor').value.trim();
-        const unidad = li.querySelector('.edit-unidad').value.trim();
-        if (valor) { updateSize(id, valor, unidad); }
+        const newValor = li.querySelector('.edit-valor').value.trim();
+        const newUnidad = li.querySelector('.edit-unidad').value.trim();
+        if (newValor) { updateSize(id, newValor, newUnidad); }
     }
     if (target.classList.contains('cancel-btn')) { loadSizes(); }
 }
 
-async function deleteSize(id) {
-    if (confirm(`¿Eliminar tamaño ID ${id}?`)) {
+async function deleteSize(id, display) {
+    if (confirm(`¿Eliminar el tamaño "${display}"?`)) {
         const { error } = await supabase.from('tamanio').delete().eq('id_tamanio', id);
         if (error) { alert(`Error al eliminar: ${error.message}`); }
-        else { await loadSizes(); }
+        else {
+            await loadSizes();
+            window.dispatchEvent(new CustomEvent('catalog:changed'));
+            showToast(`Tamaño "${display}" eliminado`);
+        }
     }
 }
 
 async function updateSize(id, valor, unidad) {
     const { error } = await supabase.from('tamanio').update({ valor, unidad }).eq('id_tamanio', id);
     if (error) { alert(`Error al actualizar: ${error.message}`); }
-    else { await loadSizes(); }
+    else {
+        await loadSizes();
+        window.dispatchEvent(new CustomEvent('catalog:changed'));
+        showToast(`Tamaño "${sizeDisplay(valor, unidad)}" actualizado`);
+    }
 }

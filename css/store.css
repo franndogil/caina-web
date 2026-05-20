@@ -397,6 +397,91 @@
       word-break: break-word;
     }
 
+    /* ===== GALLERY EN MODAL ===== */
+
+    .sel-gallery {
+      width: 100%;
+      margin-bottom: .9rem;
+    }
+
+    .sel-gallery-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #0e0e0e;
+      position: relative;
+    }
+
+    .sel-gallery-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity .18s ease;
+    }
+
+    .sel-gallery-ph {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      background: #0e0e0e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      color: var(--muted);
+    }
+
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      margin: 0;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+      line-height: 1;
+    }
+
+    .gallery-arrow:hover  { background: rgba(0,0,0,.85); color: #fff; }
+    .gallery-arrow:disabled { opacity: .25; cursor: default; }
+    .gallery-prev { left:  .55rem; }
+    .gallery-next { right: .55rem; }
+
+    .gallery-dots {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      margin-top: .6rem;
+    }
+
+    .gallery-dot {
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      margin: 0;
+      border-radius: 50%;
+      background: #333;
+      border: none;
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+
+    .gallery-dot:hover     { background: #555; }
+    .gallery-dot--active   { background: var(--lime); transform: scale(1.25); }
+
     /* ===== MODAL SELECTOR ===== */
 
     .sticker-modal {

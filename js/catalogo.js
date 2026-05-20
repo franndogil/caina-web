@@ -1,7 +1,7 @@
 (function () {
 
 // =========================
-// SUPABASE — admin DB
+// SUPABASE
 // =========================
 
 if (!window.supabaseClient) {
@@ -13,17 +13,19 @@ if (!window.supabaseClient) {
 
 const supabase = window.supabaseClient;
 
-let productos  = [];
-let variantes  = [];
-let materiales = [];
-let tamanios   = [];
-let precios    = [];
+let productos           = [];
+let variantes           = [];
+let materiales          = [];
+let tamanios            = [];
+let precios             = [];
+let imagenesPorProducto = {}; // { id_producto: [{ path_imagen, publicUrl, orden }] }
 
 let sel = {
   producto:   null,
   materialId: null,
   tamanioId:  null,
   cantidad:   1,
+  imgIndex:   0,
 };
 
 let sortBy = "nombre";
@@ -33,7 +35,7 @@ let sortBy = "nombre";
 // =========================
 
 async function cargarTodo() {
-  const [prods, vars, mats, tams, pres] = await Promise.all([
+  const [prods, vars, mats, tams, pres, imgs] = await Promise.all([
     supabase.from("producto").select("*, tipo(id_tipo, nombre_tipo)"),
     supabase.from("variante").select("*"),
     supabase.from("material").select("*"),
@@ -44,11 +46,8 @@ async function cargarTodo() {
       precio_usa_material(id_material),
       precio_usa_tamanio(id_tamanio)
     `),
+    supabase.from("imagen_producto").select("*").order("orden"),
   ]);
-
-  if (prods.error || vars.error || mats.error || tams.error || pres.error) {
-    console.error("[catalogo] Error cargando data:", { prods, vars, mats, tams, pres });
-  }
 
   productos  = prods.data || [];
   variantes  = vars.data  || [];
@@ -56,12 +55,12 @@ async function cargarTodo() {
   tamanios   = tams.data  || [];
   precios    = pres.data  || [];
 
-  console.log("[catalogo] cargado:", {
-    productos:  productos.length,
-    variantes:  variantes.length,
-    materiales: materiales.length,
-    tamanios:   tamanios.length,
-    precios:    precios.length,
+  // Construir mapa id_producto → imágenes con URL pública
+  imagenesPorProducto = {};
+  (imgs.data || []).forEach(img => {
+    const { data: { publicUrl } } = supabase.storage.from("productos").getPublicUrl(img.path_imagen);
+    if (!imagenesPorProducto[img.id_producto]) imagenesPorProducto[img.id_producto] = [];
+    imagenesPorProducto[img.id_producto].push({ ...img, publicUrl });
   });
 
   renderProductos();
@@ -72,33 +71,34 @@ async function cargarTodo() {
 // HELPERS DE VARIANTES
 // =========================
 
-// Materiales disponibles para un producto
-function getMaterialesDeProducto(id_producto) {
-  const ids = [...new Set(
-    variantes.filter(v => v.id_producto === id_producto).map(v => v.id_material)
-  )];
-  return materiales.filter(m => ids.includes(m.id_material));
-}
-
-// Tamaños disponibles para un producto + material
-function getTamaniosDeProductoYMaterial(id_producto, id_material) {
+// Solo tamaños que tienen precio definido para la combinación tipo+material+tamaño
+function getTamaniosDeProductoYMaterial(id_producto, id_material, id_tipo) {
   const ids = [...new Set(
     variantes
       .filter(v => v.id_producto === id_producto && v.id_material === id_material)
       .map(v => v.id_tamanio)
   )];
-  // ordenar: primero por unidad, luego por valor numérico
   return tamanios
-    .filter(t => ids.includes(t.id_tamanio))
+    .filter(t => ids.includes(t.id_tamanio) && getPrecio(id_tipo ?? null, id_material, t.id_tamanio) !== null)
     .sort((a, b) => {
       if (a.unidad !== b.unidad) return a.unidad.localeCompare(b.unidad);
       return parseFloat(a.valor) - parseFloat(b.valor);
     });
 }
 
-// Precio para material + tamaño (intenta match exacto, luego fallbacks)
+// Solo materiales que tienen al menos un tamaño con precio
+function getMaterialesDeProducto(id_producto, id_tipo) {
+  const ids = [...new Set(
+    variantes.filter(v => v.id_producto === id_producto).map(v => v.id_material)
+  )];
+  return materiales.filter(m =>
+    ids.includes(m.id_material) &&
+    getTamaniosDeProductoYMaterial(id_producto, m.id_material, id_tipo).length > 0
+  );
+}
+
 function getPrecio(id_tipo, id_material, id_tamanio) {
-  // 1. tipo + material + tamaño
+  // Exact match: tipo + material + tamaño
   let match = precios.find(p =>
     p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
     p.precio_usa_material?.some(m => m.id_material === id_material) &&
@@ -106,16 +106,19 @@ function getPrecio(id_tipo, id_material, id_tamanio) {
   );
   if (match) return match;
 
-  // 2. material + tamaño
+  // Material + tamaño, sin restricción de tipo (precio genérico para todos los tipos)
   match = precios.find(p =>
     p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
-    p.precio_usa_material?.some(m => m.id_material === id_material)
+    p.precio_usa_material?.some(m => m.id_material === id_material) &&
+    (!p.precio_usa_tipo || p.precio_usa_tipo.length === 0)
   );
   if (match) return match;
 
-  // 3. solo tamaño
+  // Solo tamaño, sin restricción de material ni tipo (precio verdaderamente genérico)
   return precios.find(p =>
-    p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio)
+    p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
+    (!p.precio_usa_material || p.precio_usa_material.length === 0) &&
+    (!p.precio_usa_tipo || p.precio_usa_tipo.length === 0)
   ) ?? null;
 }
 
@@ -124,8 +127,8 @@ function getPrecio(id_tipo, id_material, id_tamanio) {
 // =========================
 
 const SORTS = [
-  { key: "nombre",    label: "A–Z" },
-  { key: "tipo",      label: "Tipo" },
+  { key: "nombre", label: "A–Z" },
+  { key: "tipo",   label: "Tipo" },
 ];
 
 function productosSorted() {
@@ -177,7 +180,6 @@ function renderProductos() {
     <div class="card">
       <div class="card-name">Productos</div>
       <p class="card-desc">Tocá un diseño para elegir material, tamaño y cantidad.</p>
-
       <div class="sort-row">
         ${SORTS.map(s => `
           <button class="sort-chip ${sortBy === s.key ? "sort-chip--active" : ""}"
@@ -186,7 +188,6 @@ function renderProductos() {
           </button>
         `).join("")}
       </div>
-
       ${contenido}
     </div>
   `;
@@ -195,13 +196,20 @@ function renderProductos() {
 function productoGrid(items, offset = 0) {
   return `
     <div class="stickers-grid">
-      ${items.map((p, i) => `
-        <button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
-                onclick="abrirProducto(${p.id_producto})">
-          <div class="sticker-thumb sticker-thumb--ph">🎨</div>
-          <span class="sticker-name">${escapar(p.nombre)}</span>
-        </button>
-      `).join("")}
+      ${items.map((p, i) => {
+        const imgs  = imagenesPorProducto[p.id_producto] || [];
+        const thumb = imgs[0]?.publicUrl;
+        const imgHtml = thumb
+          ? `<img class="sticker-thumb" src="${escapar(thumb)}" alt="${escapar(p.nombre)}" loading="lazy">`
+          : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+        return `
+          <button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
+                  onclick="abrirProducto(${p.id_producto})">
+            ${imgHtml}
+            <span class="sticker-name">${escapar(p.nombre)}</span>
+          </button>
+        `;
+      }).join("")}
     </div>
   `;
 }
@@ -232,12 +240,13 @@ function abrirProducto(id_producto) {
   const producto = productos.find(p => p.id_producto === id_producto);
   if (!producto) return;
 
-  const mats    = getMaterialesDeProducto(id_producto);
+  const id_tipo = producto.tipo?.id_tipo ?? null;
+  const mats    = getMaterialesDeProducto(id_producto, id_tipo);
   const matId   = mats[0]?.id_material ?? null;
-  const tams    = matId ? getTamaniosDeProductoYMaterial(id_producto, matId) : [];
+  const tams    = matId ? getTamaniosDeProductoYMaterial(id_producto, matId, id_tipo) : [];
   const tamId   = tams[0]?.id_tamanio ?? null;
 
-  sel = { producto, materialId: matId, tamanioId: tamId, cantidad: 1 };
+  sel = { producto, materialId: matId, tamanioId: tamId, cantidad: 1, imgIndex: 0 };
 
   renderModal();
   document.getElementById("sticker-modal").style.display = "flex";
@@ -254,29 +263,47 @@ function renderModal() {
   if (!body || !sel.producto) return;
 
   const { id_producto, nombre, tipo } = sel.producto;
+  const id_tipo = tipo?.id_tipo ?? null;
+  const imgs  = imagenesPorProducto[id_producto] || [];
+  const mats  = getMaterialesDeProducto(id_producto, id_tipo);
+  const tams  = sel.materialId ? getTamaniosDeProductoYMaterial(id_producto, sel.materialId, id_tipo) : [];
 
-  const mats     = getMaterialesDeProducto(id_producto);
-  const tams     = sel.materialId
-    ? getTamaniosDeProductoYMaterial(id_producto, sel.materialId)
-    : [];
-
-  const precioObj = (sel.materialId && sel.tamanioId)
+  const precioObj  = (sel.materialId && sel.tamanioId)
     ? getPrecio(tipo?.id_tipo ?? null, sel.materialId, sel.tamanioId)
     : null;
-
   const precioUnit = precioObj?.valor ?? null;
   const subtotal   = precioUnit != null ? Math.round(precioUnit * sel.cantidad) : null;
   const canAdd     = precioObj != null;
+  const fmt        = n => n.toLocaleString("es-AR");
 
-  const fmt = n => n.toLocaleString("es-AR");
+  // Galería
+  const currentImg = imgs[sel.imgIndex];
+  const galleryHtml = imgs.length > 0 ? `
+    <div class="sel-gallery">
+      <div class="sel-gallery-wrap" id="gallery-wrap">
+        <img class="sel-gallery-img" src="${escapar(currentImg.publicUrl)}" alt="${escapar(nombre)}">
+        ${imgs.length > 1 ? `
+          <button class="gallery-arrow gallery-prev" onclick="prevImg()" ${sel.imgIndex === 0 ? "disabled" : ""}>&#8249;</button>
+          <button class="gallery-arrow gallery-next" onclick="nextImg()" ${sel.imgIndex === imgs.length - 1 ? "disabled" : ""}>&#8250;</button>
+        ` : ""}
+      </div>
+      ${imgs.length > 1 ? `
+        <div class="gallery-dots">
+          ${imgs.map((_, i) => `
+            <button class="gallery-dot ${i === sel.imgIndex ? "gallery-dot--active" : ""}"
+                    onclick="goToImg(${i})"></button>
+          `).join("")}
+        </div>
+      ` : ""}
+    </div>
+  ` : `<div class="sel-gallery-ph">🎨</div>`;
 
   body.innerHTML = `
     <button class="sticker-modal-close" onclick="cerrarSticker()" aria-label="Cerrar">×</button>
 
-    <div class="sel-header">
-      <div class="sel-img sel-img--ph">🎨</div>
-      <h3 class="sel-title">${escapar(nombre)}</h3>
-    </div>
+    ${galleryHtml}
+
+    <h3 class="sel-title" style="text-align:center;margin-bottom:1.2rem;">${escapar(nombre)}</h3>
 
     <div class="sel-group">
       <p class="sel-label">Material</p>
@@ -299,7 +326,7 @@ function renderModal() {
           ? tams.map(t => `
               <button class="chip ${sel.tamanioId === t.id_tamanio ? "chip--active" : ""}"
                       onclick="setTamanio(${t.id_tamanio})">
-                ${escapar(t.valor)} ${escapar(t.unidad)}
+                ${escapar(t.valor)} ${escapar(t.unidad ?? "")}
               </button>
             `).join("")
           : `<span class="chip-empty">Elegí un material primero</span>`}
@@ -329,27 +356,45 @@ function renderModal() {
       Agregar al pedido
     </button>
   `;
+
+  // Touch swipe para móvil
+  if (imgs.length > 1) {
+    const wrap = document.getElementById("gallery-wrap");
+    let touchStartX = 0;
+    wrap.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    wrap.addEventListener("touchend", e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 45) diff > 0 ? nextImg() : prevImg();
+    });
+  }
+}
+
+// Navegación de galería
+function prevImg() {
+  if (sel.imgIndex > 0) { sel.imgIndex--; renderModal(); }
+}
+function nextImg() {
+  const imgs = imagenesPorProducto[sel.producto?.id_producto] || [];
+  if (sel.imgIndex < imgs.length - 1) { sel.imgIndex++; renderModal(); }
+}
+function goToImg(i) {
+  sel.imgIndex = i;
+  renderModal();
 }
 
 function setMaterial(id) {
   sel.materialId = id;
-  // Si el tamaño actual no existe para este material, resetear al primero
-  const tams = getTamaniosDeProductoYMaterial(sel.producto.id_producto, id);
+  const id_tipo = sel.producto.tipo?.id_tipo ?? null;
+  const tams    = getTamaniosDeProductoYMaterial(sel.producto.id_producto, id, id_tipo);
   if (!tams.find(t => t.id_tamanio === sel.tamanioId)) {
     sel.tamanioId = tams[0]?.id_tamanio ?? null;
   }
   renderModal();
 }
 
-function setTamanio(id) {
-  sel.tamanioId = id;
-  renderModal();
-}
-
-function incCantidad() { sel.cantidad++; renderModal(); }
-function decCantidad() {
-  if (sel.cantidad > 1) { sel.cantidad--; renderModal(); }
-}
+function setTamanio(id) { sel.tamanioId = id; renderModal(); }
+function incCantidad()   { sel.cantidad++;               renderModal(); }
+function decCantidad()   { if (sel.cantidad > 1) { sel.cantidad--; renderModal(); } }
 
 function confirmarProducto() {
   if (!sel.materialId || !sel.tamanioId) return;
@@ -357,7 +402,6 @@ function confirmarProducto() {
   const mat       = materiales.find(m => m.id_material === sel.materialId);
   const tam       = tamanios.find(t => t.id_tamanio === sel.tamanioId);
   const precioObj = getPrecio(sel.producto.tipo?.id_tipo ?? null, sel.materialId, sel.tamanioId);
-
   if (!precioObj) return;
 
   const tamLabel = `${tam?.valor ?? ""} ${tam?.unidad ?? ""}`.trim();
@@ -382,7 +426,7 @@ function renderModalIfOpen() {
 }
 
 // =========================
-// MODAL IMAGEN (zoom — para productos con imagen)
+// MODAL IMAGEN (zoom)
 // =========================
 
 function abrirImagen(src) {
@@ -413,6 +457,9 @@ window.confirmarProducto = confirmarProducto;
 window.renderModalIfOpen = renderModalIfOpen;
 window.abrirImagen       = abrirImagen;
 window.cerrarImagen      = cerrarImagen;
+window.prevImg           = prevImg;
+window.nextImg           = nextImg;
+window.goToImg           = goToImg;
 
 // =========================
 // INIT
@@ -432,7 +479,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if (document.getElementById("sticker-modal")?.style.display === "flex") cerrarSticker();
-  if (document.getElementById("modal-img")?.style.display === "flex")    cerrarImagen();
+  if (document.getElementById("modal-img")?.style.display    === "flex") cerrarImagen();
 });
 
 })();

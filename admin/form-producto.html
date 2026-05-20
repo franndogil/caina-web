@@ -51,7 +51,7 @@
             <h2>Atributos para variantes automáticas</h2>
 
             <p id="edit-mode-notice" style="display: none;">
-                <strong>Modo Edición:</strong> La selección de materiales y tamaños no se puede cambiar para evitar alterar las variantes existentes.
+                <strong>Modo Edición:</strong> Los materiales y tamaños pre-seleccionados corresponden a las variantes actuales. Podés agregar o quitar — las nuevas combinaciones se crean y las eliminadas se borran al guardar.
             </p>
 
             <div class="form-group">
@@ -72,6 +72,17 @@
                 <label>Categorías</label>
                 <div id="product-categories" class="checkbox-group"></div>
             </div>
+
+            <hr>
+
+            <h2>Imágenes</h2>
+
+            <div id="images-section">
+                <div id="images-grid" class="images-grid"></div>
+                <input type="file" id="image-input" accept="image/*" multiple style="display:none;">
+            </div>
+
+            <hr>
 
             <button type="submit" id="save-product-button">Guardar Producto y Generar Variantes</button>
 

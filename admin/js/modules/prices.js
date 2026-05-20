@@ -1,4 +1,5 @@
 import { supabase } from '../auth.js';
+import { showToast } from '../toast.js';
 
 // --- Elementos del DOM ---
 const pricesList = document.getElementById('prices-list');
@@ -27,6 +28,16 @@ export async function initPrices() {
     // 3. Asignar los manejadores de eventos
     addPriceForm.addEventListener('submit', handleCreate);
     pricesList.addEventListener('click', handleListClick);
+    priceTipoSelect.addEventListener('change', filterByTipo);
+
+    // Refrescar selects cuando otro módulo mute tipos/materiales/tamaños
+    window.addEventListener('catalog:changed', async () => {
+        const tipoAnterior = priceTipoSelect.value;
+        await loadCatalogsToCache();
+        populateSelect(priceTipoSelect, tiposCache, 'nombre_tipo', 'id_tipo', 'Asociar a un Tipo');
+        priceTipoSelect.value = tipoAnterior;
+        await filterByTipo();
+    });
 }
 
 // --- Lógica de Carga y UI ---
@@ -84,6 +95,37 @@ function populateSelect(selectElement, data, nameField, idField, defaultText) {
         option.textContent = displayText;
         selectElement.appendChild(option);
     });
+}
+
+async function filterByTipo() {
+    const tipoId = priceTipoSelect.value;
+    priceMaterialSelect.value = '';
+    priceTamanioSelect.value = '';
+
+    if (!tipoId) {
+        populateSelect(priceMaterialSelect, materialesCache, 'nombre_material', 'id_material', 'Asociar a un Material');
+        populateSelect(priceTamanioSelect, tamaniosCache, 'valor', 'id_tamanio', 'Asociar a un Tamaño');
+        return;
+    }
+
+    const [{ data: tipoMateriales }, { data: tipoTamanios }] = await Promise.all([
+        supabase.from('tipo_material').select('id_material').eq('id_tipo', tipoId),
+        supabase.from('tipo_tamanio').select('id_tamanio').eq('id_tipo', tipoId)
+    ]);
+
+    const materialIds = new Set((tipoMateriales || []).map(r => r.id_material));
+    const tamanioIds = new Set((tipoTamanios || []).map(r => r.id_tamanio));
+
+    populateSelect(
+        priceMaterialSelect,
+        materialesCache.filter(m => materialIds.has(m.id_material)),
+        'nombre_material', 'id_material', 'Asociar a un Material'
+    );
+    populateSelect(
+        priceTamanioSelect,
+        tamaniosCache.filter(t => tamanioIds.has(t.id_tamanio)),
+        'valor', 'id_tamanio', 'Asociar a un Tamaño'
+    );
 }
 
 async function loadPrices() {
@@ -174,8 +216,16 @@ async function handleCreate(e) {
         if (materialId) await supabase.from('precio_usa_material').insert([{ id_precio: newPriceId, id_material: materialId }]);
         if (tamanioId) await supabase.from('precio_usa_tamanio').insert([{ id_precio: newPriceId, id_tamanio: tamanioId }]);
         
+        const partes = [];
+        if (tipoId) partes.push(tiposCache.find(t => t.id_tipo == tipoId)?.nombre_tipo);
+        if (materialId) partes.push(materialesCache.find(m => m.id_material == materialId)?.nombre_material);
+        if (tamanioId) {
+            const t = tamaniosCache.find(t => t.id_tamanio == tamanioId);
+            if (t) partes.push(t.unidad ? `${t.valor} ${t.unidad}` : t.valor);
+        }
         addPriceForm.reset();
         await loadPrices();
+        showToast(`Precio $${valor} para ${partes.join(' · ')} agregado`);
     } catch (error) {
         await supabase.from('precio').delete().eq('id_precio', newPriceId); // Limpieza en caso de error
         alert(`Error al crear las asociaciones del precio: ${error.message}`);
@@ -252,6 +302,7 @@ async function updatePrice(id, li) {
         alert(`Error al actualizar el precio: ${error.message}`);
     } else {
         await loadPrices();
+        showToast(`Precio $${valor} actualizado`);
     }
 }
 
@@ -260,6 +311,9 @@ async function deletePrice(id) {
         // Al tener "ON DELETE CASCADE" en las FK, solo necesitamos borrar el precio principal.
         const { error } = await supabase.from('precio').delete().eq('id_precio', id);
         if (error) { alert(`Error al eliminar: ${error.message}`); }
-        else { await loadPrices(); }
+        else {
+            await loadPrices();
+            showToast('Regla de precio eliminada');
+        }
     }
 }

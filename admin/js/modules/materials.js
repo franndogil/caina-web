@@ -1,4 +1,5 @@
 import { supabase } from '../auth.js';
+import { showToast } from '../toast.js';
 
 const materialsList = document.getElementById('materials-list');
 const addMaterialForm = document.getElementById('add-material-form');
@@ -18,6 +19,7 @@ async function loadMaterials() {
     materials.forEach(material => {
         const li = document.createElement('li');
         li.dataset.id = material.id_material;
+        li.dataset.nombre = material.nombre_material;
         li.innerHTML = `
             <span class="name">${material.nombre_material}</span>
             <div class="actions">
@@ -39,6 +41,8 @@ async function handleCreate(e) {
     else {
         newMaterialNameInput.value = '';
         await loadMaterials();
+        window.dispatchEvent(new CustomEvent('catalog:changed'));
+        showToast(`Material "${nombre}" agregado`);
     }
 }
 
@@ -47,12 +51,12 @@ function handleListClick(event) {
     const li = target.closest('li');
     if (!li) return;
     const id = li.dataset.id;
+    const nombre = li.dataset.nombre;
 
-    if (target.classList.contains('delete-btn')) { deleteMaterial(id); }
+    if (target.classList.contains('delete-btn')) { deleteMaterial(id, nombre); }
     if (target.classList.contains('edit-btn')) {
-        const currentName = li.querySelector('.name').textContent;
         li.innerHTML = `
-            <input type="text" value="${currentName}" class="edit-input">
+            <input type="text" value="${nombre}" class="edit-input">
             <div class="actions">
                 <button class="save-btn">Guardar</button>
                 <button class="cancel-btn">Cancelar</button>
@@ -66,16 +70,24 @@ function handleListClick(event) {
     if (target.classList.contains('cancel-btn')) { loadMaterials(); }
 }
 
-async function deleteMaterial(id) {
-    if (confirm(`¿Eliminar material ID ${id}?`)) {
+async function deleteMaterial(id, nombre) {
+    if (confirm(`¿Eliminar el material "${nombre}"?`)) {
         const { error } = await supabase.from('material').delete().eq('id_material', id);
         if (error) { alert(`Error al eliminar: ${error.message}`); }
-        else { await loadMaterials(); }
+        else {
+            await loadMaterials();
+            window.dispatchEvent(new CustomEvent('catalog:changed'));
+            showToast(`Material "${nombre}" eliminado`);
+        }
     }
 }
 
 async function updateMaterial(id, newName) {
     const { error } = await supabase.from('material').update({ nombre_material: newName }).eq('id_material', id);
     if (error) { alert(`Error al actualizar: ${error.message}`); }
-    else { await loadMaterials(); }
+    else {
+        await loadMaterials();
+        window.dispatchEvent(new CustomEvent('catalog:changed'));
+        showToast(`Material "${newName}" actualizado`);
+    }
 }
