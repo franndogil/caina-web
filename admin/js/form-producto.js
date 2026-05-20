@@ -1,4 +1,4 @@
-import { supabase } from './auth.js';
+import { supabase, getUserSession } from './auth.js';
 
 // --- ELEMENTOS DEL DOM ---
 const form = document.getElementById('product-form');
@@ -168,6 +168,11 @@ async function handleFormSubmit(e) {
 
 // --- INICIALIZACIÓN ---
 (async () => {
+    if (!await getUserSession()) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     form.addEventListener('submit', handleFormSubmit);
     await loadFormData();
     await loadProductForEdit();

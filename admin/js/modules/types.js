@@ -43,8 +43,8 @@ async function loadTypes() {
         li.dataset.id = tipo.id_tipo; // Guardamos el ID en un atributo data
         li.innerHTML = `
             <span class="type-name">${tipo.nombre_tipo}</span>
-            div class="actions">
-                <button class="modify-btn">Modificar</button>
+            <div class="actions">
+                <button class="edit-btn">Modificar</button>
                 <button class="delete-btn">Eliminar</button>
             </div>
         `;

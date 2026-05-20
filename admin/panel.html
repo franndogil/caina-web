@@ -3,115 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración</title>
-    <!-- Aquí puedes enlazar los mismos estilos que el login si quieres -->
-    <style>
-        body { font-family: sans-serif; padding: 2rem; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; }
-        #logout-button { padding: 0.5rem 1rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    </style>
+    <title>Panel — Caina Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-    <div class="panel-header">
-        <h1>Panel de Administración</h1>
-        <button id="logout-button">Cerrar Sesión</button>
-    </div>
-    <hr>
-    <div id="content">
-        <h2>Mi Catálogo</h2>
-        <a href="form-producto.html"><button>+ Nuevo Producto</button></a>
-        <table id="products-table">
-            <thead>
-                <tr>
-                    <th>ID Producto</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="products-list">
-                <!-- Los productos se cargarán aquí con JavaScript -->
-            </tbody>
-        </table>
-        <div id="loading-message">Cargando productos...</div>
-    </div>
-    <!-- Pega este bloque dentro del <div id="content">, después de la tabla de productos -->
-<hr style="margin-top: 4rem;">
 
-<div class="main-section">
-    <h2>Centro de Control</h2>
-    <a href="variantes.html" class="button-link">Ver y Gestionar Todas las Variantes</a>
-</div>
-<hr>
+    <nav class="admin-nav">
+        <div class="admin-nav-left">
+            <span class="admin-nav-logo">Caina</span>
+            <span class="admin-nav-badge">Admin</span>
+        </div>
+        <div class="admin-nav-right">
+            <button id="logout-button" class="btn-ghost btn-sm">Cerrar Sesión</button>
+        </div>
+    </nav>
 
-<div id="management-section">
-    <h2>Gestionar Catálogos</h2>
-    
-    <div class="catalog-manager">
-        <h3>Tipos de Producto</h3>
-        <ul id="types-list">
-            <!-- La lista de tipos se cargará aquí -->
-        </ul>
-        <form id="add-type-form" class="add-form">
-            <input type="text" id="new-type-name" placeholder="Nombre del nuevo tipo" required>
-            <button type="submit">Añadir Tipo</button>
-        </form>
+    <div class="admin-wrapper">
+
+        <div id="content">
+            <div class="section-header">
+                <h2>Mi Catálogo</h2>
+                <a href="form-producto.html" class="btn btn-sm">+ Nuevo Producto</a>
+            </div>
+
+            <div class="table-wrap">
+                <table id="products-table">
+                    <thead>
+                        <tr>
+                            <th>ID Producto</th>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-list">
+                        <!-- Los productos se cargarán aquí con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="loading-message">Cargando productos...</div>
+        </div>
+
+        <hr>
+
+        <div class="main-section">
+            <div class="section-header">
+                <h2>Centro de Control</h2>
+                <a href="variantes.html" class="button-link">Ver y Gestionar Variantes</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="management-section">
+            <h2>Gestionar Catálogos</h2>
+
+            <div class="catalog-manager">
+                <h3>Tipos de Producto</h3>
+                <ul id="types-list">
+                    <!-- La lista de tipos se cargará aquí -->
+                </ul>
+                <form id="add-type-form" class="add-form">
+                    <input type="text" id="new-type-name" placeholder="Nombre del nuevo tipo" required>
+                    <button type="submit">Añadir Tipo</button>
+                </form>
+            </div>
+
+            <div class="catalog-manager">
+                <h3>Reglas de Precios</h3>
+                <p>Define el costo base o adicional para cada combinación de atributos.</p>
+                <ul id="prices-list">
+                    <!-- Las reglas de precios se cargarán aquí -->
+                </ul>
+                <form id="add-price-form" class="add-form">
+                    <input type="number" id="new-price-value" placeholder="Valor del Precio" step="0.01" required>
+                    <select id="price-tipo-select"><option value="">Asociar a un Tipo</option></select>
+                    <select id="price-material-select"><option value="">Asociar a un Material</option></select>
+                    <select id="price-tamanio-select"><option value="">Asociar a un Tamaño</option></select>
+                    <button type="submit">Añadir Regla</button>
+                </form>
+            </div>
+
+            <div class="catalog-manager">
+                <h3>Materiales</h3>
+                <ul id="materials-list">
+                    <!-- Lista de materiales -->
+                </ul>
+                <form id="add-material-form" class="add-form">
+                    <input type="text" id="new-material-name" placeholder="Nombre del nuevo material" required>
+                    <button type="submit">Añadir Material</button>
+                </form>
+            </div>
+
+            <div class="catalog-manager">
+                <h3>Tamaños</h3>
+                <ul id="sizes-list">
+                    <!-- Lista de tamaños -->
+                </ul>
+                <form id="add-size-form" class="add-form">
+                    <input type="text" id="new-size-value" placeholder="Valor (ej: S, M, 40)" required>
+                    <input type="text" id="new-size-unit" placeholder="Unidad (ej: cm, oz)">
+                    <button type="submit">Añadir Tamaño</button>
+                </form>
+            </div>
+
+            <div class="catalog-manager">
+                <h3>Categorías</h3>
+                <ul id="categories-list">
+                    <!-- La lista de categorías se cargará aquí -->
+                </ul>
+                <form id="add-category-form" class="add-form">
+                    <input type="text" id="new-category-name" placeholder="Nombre de la nueva categoría" required>
+                    <button type="submit">Añadir Categoría</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
-        <!-- Pega este bloque al final de <div id="management-section"> en tu panel.html -->
-    <div class="catalog-manager">
-        <h3>Reglas de Precios</h3>
-        <p>Define el costo base o adicional para cada combinación de atributos.</p>
-        
-        <ul id="prices-list">
-            <!-- Las reglas de precios se cargarán aquí -->
-        </ul>
-        
-        <form id="add-price-form" class="add-form" style="flex-wrap: wrap;">
-            <input type="number" id="new-price-value" placeholder="Valor del Precio" step="0.01" required style="flex-grow: 1;">
-            <select id="price-tipo-select" style="flex-grow: 1;"><option value="">Asociar a un Tipo</option></select>
-            <select id="price-material-select" style="flex-grow: 1;"><option value="">Asociar a un Material</option></select>
-            <select id="price-tamanio-select" style="flex-grow: 1;"><option value="">Asociar a un Tamaño</option></select>
-            <button type="submit">Añadir Regla de Precio</button>
-        </form>
-    </div>
-    
-    <!-- Añade esto dentro de <div id="management-section"> -->
-
-    <div class="catalog-manager">
-        <h3>Materiales</h3>
-        <ul id="materials-list">
-            <!-- Lista de materiales -->
-        </ul>
-        <form id="add-material-form" class="add-form">
-            <input type="text" id="new-material-name" placeholder="Nombre del nuevo material" required>
-            <button type="submit">Añadir Material</button>
-        </form>
-    </div>
-
-    <div class="catalog-manager">
-        <h3>Tamaños</h3>
-        <ul id="sizes-list">
-            <!-- Lista de tamaños -->
-        </ul>
-        <form id="add-size-form" class="add-form">
-            <input type="text" id="new-size-value" placeholder="Valor (ej: S, M, 40)" required>
-            <input type="text" id="new-size-unit" placeholder="Unidad (ej: cm, oz)">
-            <button type="submit">Añadir Tamaño</button>
-        </form>
-    </div>
-
-    <div class="catalog-manager">
-        <h3>Categorías</h3>
-        <ul id="categories-list">
-            <!-- La lista de categorías se cargará aquí -->
-        </ul>
-        <form id="add-category-form" class="add-form">
-            <input type="text" id="new-category-name" placeholder="Nombre de la nueva categoría" required>
-            <button type="submit">Añadir Categoría</button>
-        </form>
-    </div>
-</div>
     <script type="module" src="js/panel.js"></script>
 </body>
 </html>

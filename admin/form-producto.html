@@ -3,50 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Producto - Panel de Administración</title>
-    <link rel="stylesheet" href="../styles.css">
-    <style>
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        /* NUEVOS ESTILOS PARA LOS CHECKBOXES */
-        .checkbox-group {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .checkbox-group label {
-            display: block;
-            font-weight: normal;
-            margin-bottom: 8px;
-        }
-        .checkbox-group input {
-            margin-right: 8px;
-        }
-    </style>
+    <title>Gestión de Producto — Caina Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-    <header>
-        <h1>Gestión de Producto</h1>
-        <a href="panel.html">Volver al Panel</a>
-    </header>
 
-    <main>
+    <nav class="admin-nav">
+        <div class="admin-nav-left">
+            <span class="admin-nav-logo">Caina</span>
+            <span class="admin-nav-badge">Admin</span>
+        </div>
+        <div class="admin-nav-right">
+            <a href="panel.html" class="nav-back">← Volver al Panel</a>
+        </div>
+    </nav>
+
+    <div class="admin-wrapper">
+
+        <div class="page-title-bar">
+            <h1 id="form-title">Añadir Nuevo Producto</h1>
+        </div>
+
         <form id="product-form">
-            <h2 id="form-title">Añadir Nuevo Producto</h2>
-            
+
             <div class="form-group">
                 <label for="product-name">Nombre del Producto</label>
-                <input type="text" id="product-name" required>
+                <input type="text" id="product-name" placeholder="Ej: Sticker personalizado" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="product-description">Descripción</label>
-                <textarea id="product-description" rows="3"></textarea>
+                <textarea id="product-description" rows="3" placeholder="Descripción del producto..."></textarea>
             </div>
 
             <div class="form-group">
@@ -57,35 +47,38 @@
             </div>
 
             <hr>
-            <h3>Atributos para generar variantes automáticas:</h3>
-            <p id="edit-mode-notice" style="display: none; color: #e67e22;">
+
+            <h2>Atributos para variantes automáticas</h2>
+
+            <p id="edit-mode-notice" style="display: none;">
                 <strong>Modo Edición:</strong> La selección de materiales y tamaños no se puede cambiar para evitar alterar las variantes existentes.
             </p>
 
-            <!-- CAMBIADO A CHECKBOXES -->
             <div class="form-group">
                 <label>Materiales Disponibles</label>
                 <div id="product-materials" class="checkbox-group"></div>
             </div>
 
-            <!-- CAMBIADO A CHECKBOXES -->
             <div class="form-group">
                 <label>Tamaños Disponibles</label>
                 <div id="product-sizes" class="checkbox-group"></div>
             </div>
 
             <hr>
-            <h3>Organización:</h3>
-            <!-- CAMBIADO A CHECKBOXES -->
+
+            <h2>Organización</h2>
+
             <div class="form-group">
                 <label>Categorías</label>
                 <div id="product-categories" class="checkbox-group"></div>
             </div>
 
             <button type="submit" id="save-product-button">Guardar Producto y Generar Variantes</button>
+
         </form>
-    </main>
-    
+
+    </div>
+
     <script type="module" src="js/form-producto.js"></script>
 </body>
 </html>

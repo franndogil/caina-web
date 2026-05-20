@@ -3,41 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Variantes - Panel de Administración</title>
-    <link rel="stylesheet" href="../styles.css">
-    <style>
-        .stock-input { width: 70px; }
-        #filters { margin-bottom: 20px; }
-        #filters input { margin-right: 10px; }
-    </style>
+    <title>Variantes — Caina Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-    <header>
-        <h1>Centro de Control de Variantes</h1>
-        <a href="panel.html">Volver al Panel Principal</a>
-    </header>
 
-    <main>
-        <div id="filters">
-            <input type="text" id="filter-text" placeholder="Buscar por nombre...">
+    <nav class="admin-nav">
+        <div class="admin-nav-left">
+            <span class="admin-nav-logo">Caina</span>
+            <span class="admin-nav-badge">Admin</span>
         </div>
-        
-        <table id="variants-table">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Variante (Material / Tamaño)</th>
-                    <th>Precio Calculado</th>
-                    <th>Stock</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="variants-list">
-                <!-- Las filas de variantes se cargarán aquí dinámicamente -->
-            </tbody>
-        </table>
-    </main>
-    
+        <div class="admin-nav-right">
+            <a href="panel.html" class="nav-back">← Volver al Panel</a>
+        </div>
+    </nav>
+
+    <div class="admin-wrapper">
+
+        <div class="page-title-bar">
+            <h1>Centro de Control de Variantes</h1>
+        </div>
+
+        <div id="filters">
+            <input type="text" id="filter-text" placeholder="Buscar por nombre de producto...">
+        </div>
+
+        <div class="table-wrap">
+            <table id="variants-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Variante (Material / Tamaño)</th>
+                        <th>Precio Calculado</th>
+                    </tr>
+                </thead>
+                <tbody id="variants-list">
+                    <!-- Las filas de variantes se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
     <script type="module" src="js/variantes.js"></script>
 </body>
 </html>

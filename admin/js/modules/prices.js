@@ -44,7 +44,6 @@ async function loadCatalogsToCache() {
 
     // Ordenar tamaños
     tamaniosCache.sort((a, b) => {
-        // Primero por unidad
         if (a.unidad !== b.unidad) {
             return a.unidad.localeCompare(b.unidad);
         }
@@ -52,7 +51,6 @@ async function loadCatalogsToCache() {
         function getValue(valor) {
             valor = valor.trim();
 
-            // Caso "10 x 7"
             if (valor.includes('x')) {
                 const [ancho, alto] = valor
                     .split('x')
@@ -61,7 +59,6 @@ async function loadCatalogsToCache() {
                 return ancho * alto;
             }
 
-            // Caso normal: "5", "470", etc.
             return parseFloat(valor);
         }
 
@@ -70,19 +67,17 @@ async function loadCatalogsToCache() {
 }
 
 function populateSelect(selectElement, data, nameField, idField, defaultText) {
+
     selectElement.innerHTML = `<option value="">${defaultText}</option>`;
+
     data.forEach(item => {
         const option = document.createElement('option');
+
         option.value = item[idField];
 
-        // --- LÓGICA MEJORADA Y SIMPLIFICADA ---
-        // Usamos la columna 'nameField' si existe (para tipos, materiales).
-        // Si no, comprobamos si el item tiene una propiedad 'unidad'.
-        // Esto funciona tanto para 'tamanio' como para cualquier otro caso.
-        let displayText = item[nameField] || item.valor; // Texto por defecto es el nombre o el valor
-        
+        let displayText = item[nameField] || item.valor;
+
         if (item.unidad) {
-            // Si el item tiene una unidad (como los tamaños), la concatenamos.
             displayText = `${item.valor} ${item.unidad}`;
         }
 
@@ -92,28 +87,47 @@ function populateSelect(selectElement, data, nameField, idField, defaultText) {
 }
 
 async function loadPrices() {
-    // Obtenemos los precios y sus relaciones
-    const { data: prices, error } = await supabase.from('precio').select(`
-        id_precio,
-        valor,
-        precio_usa_tipo ( tipo ( id_tipo, nombre_tipo ) ),
-        precio_usa_material ( material ( id_material, nombre_material ) ),
-        precio_usa_tamanio ( tamanio ( id_tamanio, valor ) )
-    `);
+    const { data: prices, error } = await supabase
+        .from('precio')
+        .select(`
+            id_precio,
+            valor,
+            precio_usa_tipo(
+                tipo(
+                    id_tipo,
+                    nombre_tipo
+                )
+            ),
+            precio_usa_material(
+                material(
+                    id_material,
+                    nombre_material
+                )
+            ),
+            precio_usa_tamanio(
+                tamanio(
+                    id_tamanio,
+                    valor,
+                    unidad
+                )
+            )
+        `);
 
-    if (error) { console.error('Error cargando precios:', error); return; }
+    if (error) {
+        console.error('Error cargando precios:', error);
+        return;
+    }
 
     pricesList.innerHTML = '';
+
     prices.forEach(price => {
+        const tipo = price.precio_usa_tipo?.[0]?.tipo;
+        const material = price.precio_usa_material?.[0]?.material;
+        const tamanio = price.precio_usa_tamanio?.[0]?.tamanio;
+
         const li = document.createElement('li');
+
         li.dataset.id = price.id_precio;
-
-        // Extraemos los datos de las relaciones de una forma más segura
-        const tipo = price.precio_usa_tipo[0]?.tipo;
-        const material = price.precio_usa_material[0]?.material;
-        const tamanio = price.precio_usa_tamanio[0]?.tamanio;
-
-        // Guardamos los IDs actuales en el elemento para usarlos en la edición
         li.dataset.tipoId = tipo?.id_tipo || '';
         li.dataset.materialId = material?.id_material || '';
         li.dataset.tamanioId = tamanio?.id_tamanio || '';
@@ -123,13 +137,15 @@ async function loadPrices() {
                 <strong>$${price.valor}</strong>
                 ${tipo ? `(Tipo: ${tipo.nombre_tipo})` : ''}
                 ${material ? `(Material: ${material.nombre_material})` : ''}
-                ${tamanio ? `(Tamaño: ${tamanio.valor})` : ''}
+                ${tamanio ? `(Tamaño: ${tamanio.valor} ${tamanio.unidad})` : ''}
             </span>
+
             <div class="actions">
                 <button class="edit-btn">Modificar</button>
                 <button class="delete-btn">Eliminar</button>
             </div>
         `;
+
         pricesList.appendChild(li);
     });
 }

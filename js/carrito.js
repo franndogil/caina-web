@@ -10,37 +10,19 @@ function guardar() {
 }
 
 // ========================
-// PRICING POR TRAMO
+// TOTALES
 // ========================
 
 function totalCarritoUnidades() {
   return carrito.reduce((sum, i) => sum + i.cantidad, 0);
 }
 
-function getTier(medidaId, materialTipo) {
-  const precios = window.preciosDB || [];
-  const total = totalCarritoUnidades();
-
-  const tiers = precios
-    .filter(p => p.medida_id === medidaId && (!materialTipo || p.tipo === materialTipo))
-    .sort((a, b) => a.cantidad - b.cantidad);
-
-  if (!tiers.length) return null;
-
-  // mayor tramo donde tramo.cantidad <= total, o mínimo si no alcanza
-  return [...tiers].reverse().find(t => t.cantidad <= total) || tiers[0];
-}
-
-function precioUnitarioPara(medidaId, materialTipo) {
-  const tier = getTier(medidaId, materialTipo);
-  return tier ? tier.precio / tier.cantidad : null;
-}
-
 // ========================
 // AGREGAR AL CARRITO
 // ========================
 
-function agregar(nombre, material, tamano, medidaId, unidades, categoria, materialTipo) {
+// precioUnitario: valor por unidad ya resuelto desde catalogo.js
+function agregar(nombre, material, tamano, tamanioId, unidades, categoria, materialId, precioUnitario) {
   const existente = carrito.find(
     i => i.nombre === nombre && i.material === material && i.tamano === tamano
   );
@@ -48,7 +30,7 @@ function agregar(nombre, material, tamano, medidaId, unidades, categoria, materi
   if (existente) {
     existente.cantidad += unidades;
   } else {
-    carrito.push({ nombre, material, tamano, medidaId, cantidad: unidades, categoria, materialTipo });
+    carrito.push({ nombre, material, tamano, tamanioId, cantidad: unidades, categoria, materialId, precioUnitario });
   }
 
   guardar();
@@ -61,12 +43,12 @@ function agregar(nombre, material, tamano, medidaId, unidades, categoria, materi
 // ========================
 
 function render() {
-  const lista = document.getElementById("lista");
+  const lista    = document.getElementById("lista");
   const totalDiv = document.getElementById("total");
   if (!lista) return;
 
   if (!carrito.length) {
-    lista.innerHTML = "No hay productos todavía";
+    lista.innerHTML    = "No hay productos todavía";
     totalDiv.innerHTML = "";
     return;
   }
@@ -75,7 +57,7 @@ function render() {
   let totalPrecio = 0;
 
   lista.innerHTML = carrito.map((item, index) => {
-    const pu = precioUnitarioPara(item.medidaId, item.materialTipo);
+    const pu  = item.precioUnitario;
     const sub = pu != null ? Math.round(pu * item.cantidad) : null;
     if (sub != null) totalPrecio += sub;
 
@@ -99,20 +81,11 @@ function render() {
     `;
   }).join("");
 
-  // badge de tramo activo
-  const tier = carrito[0] ? getTier(carrito[0].medidaId, carrito[0].materialTipo) : null;
-  const tramoHtml = tier
-    ? `<div class="tramo-badge">Tramo activo: ${tier.cantidad}u — ${totalU} stickers en carrito</div>`
-    : "";
-
   totalDiv.innerHTML = `
-    ${tramoHtml}
-    <div class="total-line">Total: $${format(Math.round(totalPrecio))}</div>
+    <div class="total-line">${totalU} unidades · Total: $${format(Math.round(totalPrecio))}</div>
   `;
 
-  // re-render modal si está abierto (precios pueden haber cambiado al agregar)
   if (window.renderModalIfOpen) window.renderModalIfOpen();
-
   actualizarBadge();
 }
 
@@ -130,7 +103,7 @@ function irAlCarrito() {
 }
 
 (function initFloatObserver() {
-  const btn = document.querySelector(".carrito-float");
+  const btn    = document.querySelector(".carrito-float");
   const resumen = document.querySelector(".resumen");
   if (!btn || !resumen) return;
 
@@ -166,9 +139,9 @@ function eliminar(index) {
 function animarAgregado() {
   const resumen = document.querySelector(".resumen");
   if (!resumen) return;
-  resumen.style.transform = "scale(1.02)";
+  resumen.style.transform  = "scale(1.02)";
   resumen.style.transition = "0.2s";
-  setTimeout(() => resumen.style.transform = "scale(1)", 150);
+  setTimeout(() => (resumen.style.transform = "scale(1)"), 150);
 }
 
 // ========================
@@ -182,14 +155,13 @@ function enviarPedido() {
   let mensaje = "Hola CAINA!\n\nQuiero pedir:\n";
 
   carrito.forEach(item => {
-    const pu    = precioUnitarioPara(item.medidaId, item.materialTipo);
-    const sub   = pu != null ? Math.round(pu * item.cantidad) : 0;
+    const pu  = item.precioUnitario;
+    const sub = pu != null ? Math.round(pu * item.cantidad) : 0;
     totalPrecio += sub;
-
-    mensaje += `- [Stickers ${item.material}] ${item.nombre}: ${item.tamano} x${item.cantidad} unidades ($${format(sub)})\n`;
+    mensaje += `- [${item.categoria}] ${item.nombre}: ${item.material}, ${item.tamano} x${item.cantidad}u ($${format(sub)})\n`;
   });
 
-  mensaje += `\nTotal: $${format(Math.round(totalPrecio))}`;
+  mensaje += `\nTotal estimado: $${format(Math.round(totalPrecio))}`;
   mensaje += "\n\n¿Me confirman precio y tiempos?";
 
   window.open(`https://wa.me/5491138454766?text=${encodeURIComponent(mensaje)}`);
@@ -200,8 +172,7 @@ function enviarPedido() {
 // ========================
 
 window.getTotalCarritoUnidades = totalCarritoUnidades;
-window.renderCarrito = render;
-window.irAlCarrito = irAlCarrito;
+window.renderCarrito           = render;
+window.irAlCarrito             = irAlCarrito;
 
-// render inicial (puede no tener preciosDB todavía, se actualiza cuando catalogo.js termine)
 render();
