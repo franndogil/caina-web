@@ -9,115 +9,8 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
   <link rel="stylesheet" href="css/nav.css">
-  <style>
-    body { padding-top: 62px; }
-
-    .page-section {
-      min-height: calc(100vh - 62px);
-      padding: 3.5rem 1.5rem 6rem;
-      max-width: 780px;
-      margin: 0 auto;
-    }
-
-    .page-header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-    .page-label {
-      display: inline-block;
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--lime);
-      margin-bottom: .6rem;
-    }
-    .page-header h1 {
-      font-family: 'Babydoll', sans-serif;
-      font-size: 3rem;
-      color: var(--white);
-      line-height: 1.05;
-      margin-bottom: .75rem;
-    }
-    .page-header p {
-      color: var(--muted);
-      font-size: .95rem;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .info-card {
-      background: var(--gray-mid);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 16px;
-      padding: 1.5rem;
-      transition: border-color .2s;
-    }
-    .info-card:hover { border-color: rgba(204,255,51,.2); }
-
-    .info-card-icon { font-size: 1.8rem; margin-bottom: .75rem; }
-    .info-card h3 {
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: .4rem;
-    }
-    .info-card p {
-      font-size: .88rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .info-card .highlight { color: var(--lime); font-weight: 700; }
-
-    .divider-title {
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 2rem 0 1rem;
-    }
-
-    .detail-list {
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .9rem 1.2rem;
-      background: var(--gray-mid);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 12px;
-      font-size: .9rem;
-    }
-    .detail-row span:first-child { color: var(--muted); }
-    .detail-row span:last-child { color: var(--white); font-weight: 600; }
-
-    .cta-note {
-      text-align: center;
-      background: rgba(204,255,51,.06);
-      border: 1px solid rgba(204,255,51,.2);
-      border-radius: 16px;
-      padding: 1.75rem 1.5rem;
-    }
-    .cta-note p { color: var(--muted); font-size: .92rem; margin-bottom: 1rem; }
-
-    @media (max-width: 480px) {
-      .page-header h1 { font-size: 2.2rem; }
-      .info-grid { grid-template-columns: 1fr; }
-      .detail-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/pages-common.css">
+  <link rel="stylesheet" href="css/envio.css">
 </head>
 <body>
 
@@ -195,7 +88,6 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/config.js"></script>
 <script src="/js/nav.js"></script>
 </body>
 </html>

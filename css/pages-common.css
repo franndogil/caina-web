@@ -1,0 +1,67 @@
+/* ─── COMMON STYLES FOR INFO PAGES ─────────────────────────────────── */
+/* Compartido entre: como-comprar, contacto, envio, faq, nosotros, politicas-cambio */
+
+body {
+  padding-top: 62px;
+}
+
+.page-section {
+  min-height: calc(100vh - 62px);
+  padding: 3.5rem 1.5rem 6rem;
+  margin: 0 auto;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-label {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: .6rem;
+}
+
+.page-header h1 {
+  font-family: 'Babydoll', sans-serif;
+  font-size: 3rem;
+  color: var(--white);
+  line-height: 1.05;
+  margin-bottom: .75rem;
+}
+
+.page-header p {
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+.cta-box {
+  text-align: center;
+  background: var(--gray-mid);
+  border: 1px solid rgba(204,255,51,.18);
+  border-radius: 18px;
+  padding: 2rem 1.5rem;
+}
+
+.cta-box p {
+  color: var(--muted);
+  font-size: .92rem;
+  margin-bottom: 1rem;
+}
+
+.cta-btns {
+  display: flex;
+  gap: .75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 2.2rem;
+  }
+}
