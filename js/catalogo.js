@@ -480,8 +480,6 @@ function renderModal() {
   ` : `<div class="sel-gallery-ph">🎨</div>`;
 
   body.innerHTML = `
-    <button class="sticker-modal-close" onclick="cerrarSticker()" aria-label="Cerrar">×</button>
-
     ${galleryHtml}
 
     <h3 class="sel-title" style="text-align:center;margin-bottom:1.2rem;">${escapar(nombre)}</h3>
