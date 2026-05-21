@@ -64,11 +64,14 @@ export async function logout() {
 }
 
 // Monitorear cambios de autenticación y redirigir si la sesión expira
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' || !session) {
-        window.location.href = 'login.html';
-    }
-});
+// (solo en páginas del panel, no en login.html)
+if (!window.location.pathname.includes('login.html')) {
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+            window.location.href = 'login.html';
+        }
+    });
+}
 
 // Logout automático por inactividad (30 minutos)
 let inactivityTimer;
