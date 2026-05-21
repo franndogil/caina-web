@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CAINA | Envíos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <style>
+    body { padding-top: 62px; }
+
+    .page-section {
+      min-height: calc(100vh - 62px);
+      padding: 3.5rem 1.5rem 6rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .page-label {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+    .page-header h1 {
+      font-family: 'Babydoll', sans-serif;
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 1.05;
+      margin-bottom: .75rem;
+    }
+    .page-header p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .info-card {
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: border-color .2s;
+    }
+    .info-card:hover { border-color: rgba(204,255,51,.2); }
+
+    .info-card-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+    .info-card h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: .4rem;
+    }
+    .info-card p {
+      font-size: .88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .info-card .highlight { color: var(--lime); font-weight: 700; }
+
+    .divider-title {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 2rem 0 1rem;
+    }
+
+    .detail-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .9rem 1.2rem;
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px;
+      font-size: .9rem;
+    }
+    .detail-row span:first-child { color: var(--muted); }
+    .detail-row span:last-child { color: var(--white); font-weight: 600; }
+
+    .cta-note {
+      text-align: center;
+      background: rgba(204,255,51,.06);
+      border: 1px solid rgba(204,255,51,.2);
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
+    }
+    .cta-note p { color: var(--muted); font-size: .92rem; margin-bottom: 1rem; }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 2.2rem; }
+      .info-grid { grid-template-columns: 1fr; }
+      .detail-row { flex-direction: column; align-items: flex-start; gap: .3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<main class="page-section">
+  <div class="page-header">
+    <span class="page-label">✦ A todo el país</span>
+    <h1>Envíos</h1>
+    <p>Mandamos a cualquier punto de Argentina. Coordinaremos el envío una vez confirmado tu pedido.</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-icon">📦</div>
+      <h3>Envío a domicilio</h3>
+      <p>Correo Argentino u OCA. El costo se calcula según tu ubicación y el peso del paquete.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🏠</div>
+      <h3>Retiro en persona</h3>
+      <p>Si estás cerca de la Zona Sur del GBA, podés coordinar retiro sin costo adicional. <span class="highlight">¡Sin cargo!</span></p>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon">🛵</div>
+      <h3>Cadete / Moto</h3>
+      <p>Para entregas dentro de la zona, podemos coordinar un cadete. El costo va por cuenta del comprador.</p>
+    </div>
+  </div>
+
+  <p class="divider-title">Tiempos de producción</p>
+  <div class="detail-list">
+    <div class="detail-row">
+      <span>Stickers cortados</span>
+      <span>3 a 5 días hábiles</span>
+    </div>
+    <div class="detail-row">
+      <span>Vinilo UV</span>
+      <span>3 a 5 días hábiles</span>
+    </div>
+    <div class="detail-row">
+      <span>Tattoos temporales</span>
+      <span>5 a 7 días hábiles</span>
+    </div>
+    <div class="detail-row">
+      <span>Agendas personalizadas</span>
+      <span>7 a 10 días hábiles</span>
+    </div>
+    <div class="detail-row">
+      <span>Pedidos urgentes</span>
+      <span>Consultanos disponibilidad</span>
+    </div>
+  </div>
+
+  <div class="cta-note">
+    <p>¿Necesitás el pedido para una fecha específica? Avisanos y buscamos la mejor solución.</p>
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20consultar%20sobre%20envíos!" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:.5rem">
+      Consultar por WhatsApp
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">CAINA</span>
+    <p>Gráfica personalizada · Zona Sur, Argentina</p>
+  </div>
+  <div class="footer-social">
+    <a href="https://wa.me/5491138454766" target="_blank" class="social-btn" title="WhatsApp"></a>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"></a>
+  </div>
+  <div class="powered-by">
+    <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/nav.js"></script>
+</body>
+</html>

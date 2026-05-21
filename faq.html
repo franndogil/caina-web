@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CAINA | Preguntas frecuentes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <style>
+    body { padding-top: 62px; }
+
+    .page-section {
+      min-height: calc(100vh - 62px);
+      padding: 3.5rem 1.5rem 6rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .page-label {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+    .page-header h1 {
+      font-family: 'Babydoll', sans-serif;
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 1.05;
+      margin-bottom: .75rem;
+    }
+    .page-header p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: .75rem;
+      margin-bottom: 3rem;
+    }
+
+    .faq-item {
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .faq-item.open { border-color: rgba(204,255,51,.25); }
+
+    .faq-q {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.3rem;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-size: .95rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .faq-arrow {
+      flex-shrink: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: rgba(204,255,51,.12);
+      color: var(--lime);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      transition: transform .25s;
+    }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+    .faq-a {
+      display: none;
+      padding: 0 1.3rem 1.1rem;
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    .cta-box {
+      text-align: center;
+      background: var(--gray-mid);
+      border: 1px solid rgba(204,255,51,.18);
+      border-radius: 18px;
+      padding: 2rem 1.5rem;
+    }
+    .cta-box p { color: var(--muted); font-size: .92rem; margin-bottom: 1rem; }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<main class="page-section">
+  <div class="page-header">
+    <span class="page-label">✦ Todo lo que querés saber</span>
+    <h1>Preguntas frecuentes</h1>
+    <p>Las dudas más comunes, respondidas. Si no encontrás lo que buscás, escribinos.</p>
+  </div>
+
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Puedo mandar mi propio diseño?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        Sí, completamente. Podés mandarnos tu diseño por WhatsApp en formato PNG, JPG o PDF con buena resolución. Si necesitás ajustes o lo queremos hacer nosotras desde cero, también lo hacemos.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Cuál es el pedido mínimo?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        Depende del producto. En general, los stickers tienen mínimo de 10 unidades por diseño. Los tattoos temporales y el vinilo UV pueden variar. Consultanos según lo que necesitás y te decimos sin compromiso.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Cómo se paga?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        Aceptamos transferencia bancaria, Mercado Pago y efectivo (solo en retiros presenciales). Pedimos un 50% de seña para empezar la producción y el resto contra entrega.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Cuánto tarda en llegar mi pedido?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        El tiempo varía según el producto: stickers entre 3 y 5 días hábiles, agendas entre 7 y 10 días hábiles. A eso se suma el tiempo del envío. Para pedidos urgentes, consultanos antes de confirmar.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Los stickers son resistentes al agua?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        Sí. Todos nuestros stickers tienen laminado protector que los hace resistentes al agua y al rayado. Aguantan termos, notebooks, laptops y uso diario sin problema.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Hacen envíos a todo el país?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        Sí, enviamos a todo Argentina por Correo Argentino u OCA. También podés retirar en persona si estás en la Zona Sur del GBA sin costo adicional.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggle(this)">
+        ¿Puedo pedir una muestra antes de hacer el pedido completo?
+        <span class="faq-arrow">↓</span>
+      </button>
+      <div class="faq-a">
+        En algunos productos podemos ofrecer prueba de diseño digital antes de imprimir. Consultanos y vemos cómo te ayudamos mejor.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-box">
+    <p>¿Tu pregunta no está acá? Escribinos y te respondemos enseguida.</p>
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20tengo%20una%20pregunta!" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:.5rem">
+      Consultar por WhatsApp
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">CAINA</span>
+    <p>Gráfica personalizada · Zona Sur, Argentina</p>
+  </div>
+  <div class="footer-social">
+    <a href="https://wa.me/5491138454766" target="_blank" class="social-btn" title="WhatsApp"></a>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"></a>
+  </div>
+  <div class="powered-by">
+    <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/nav.js"></script>
+<script>
+function toggle(btn) {
+  btn.closest('.faq-item').classList.toggle('open');
+}
+</script>
+</body>
+</html>

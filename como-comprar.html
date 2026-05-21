@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CAINA | Cómo comprar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <style>
+    body { padding-top: 62px; }
+
+    .page-section {
+      min-height: calc(100vh - 62px);
+      padding: 3.5rem 1.5rem 6rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .page-label {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+    .page-header h1 {
+      font-family: 'Babydoll', sans-serif;
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 1.05;
+      margin-bottom: .75rem;
+    }
+    .page-header p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    .step {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 1.4rem 1.5rem;
+      transition: border-color .2s;
+    }
+    .step:hover { border-color: rgba(204,255,51,.25); }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background: var(--lime);
+      color: var(--black);
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: .35rem;
+    }
+    .step-body p {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .cta-box {
+      text-align: center;
+      background: var(--gray-mid);
+      border: 1px solid rgba(204,255,51,.2);
+      border-radius: 20px;
+      padding: 2.5rem 1.5rem;
+    }
+    .cta-box p {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 1.25rem;
+    }
+    .cta-btns {
+      display: flex;
+      gap: .75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 2.2rem; }
+      .step { padding: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="nav-root"></div>
+
+<main class="page-section">
+  <div class="page-header">
+    <span class="page-label">✦ Simple y rápido</span>
+    <h1>Cómo comprar</h1>
+    <p>Hacer tu pedido en CAINA es muy fácil. Seguí estos pasos y en minutos tu diseño está en camino.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>Explorá el catálogo</h3>
+        <p>Ingresá a la sección de <a href="/pedido.html" style="color:var(--lime)">Pedidos</a> y navegá todos nuestros productos: stickers, vinilo UV, tattoos temporales y agendas. Filtrá por tipo o buscá lo que necesitás.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>Armá tu pedido</h3>
+        <p>Seleccioná los productos que querés, elegí cantidad y material. Todo se va sumando al resumen de tu pedido en tiempo real.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>Envianos el pedido por WhatsApp</h3>
+        <p>Cuando terminás, hacé clic en "Enviar pedido por WhatsApp". Se abre automáticamente una conversación con el detalle completo de lo que elegiste.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3>Coordinamos los detalles</h3>
+        <p>Te confirmamos disponibilidad, tiempos de producción y método de pago. Si tenés un diseño propio, lo podés adjuntar directamente por WhatsApp.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3>Producción y entrega</h3>
+        <p>Una vez confirmado el pago, empezamos la producción. El tiempo varía según el producto. Te avisamos cuando está listo para envío o retiro.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <p>¿Tenés alguna duda antes de arrancar? Escribinos sin compromiso.</p>
+    <div class="cta-btns">
+      <a href="/pedido.html" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:.5rem">
+        Armar pedido
+      </a>
+      <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20tengo%20una%20consulta!" target="_blank" rel="noopener" class="btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:.5rem">
+        Consultar por WhatsApp
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">CAINA</span>
+    <p>Gráfica personalizada · Zona Sur, Argentina</p>
+  </div>
+  <div class="footer-social">
+    <a href="https://wa.me/5491138454766" target="_blank" class="social-btn" title="WhatsApp"></a>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"></a>
+  </div>
+  <div class="powered-by">
+    <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/nav.js"></script>
+</body>
+</html>
