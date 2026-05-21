@@ -8,12 +8,18 @@ import { initCategories } from './modules/categories.js'; // <-- NUEVA IMPORTACI
 
 (async () => {
     // 1. Proteger la página
-    if (!await getUserSession()) {
+    const session = await getUserSession();
+    if (!session) {
         window.location.href = 'login.html';
         return;
     }
 
-    // 2. Inicializar todos los módulos en paralelo
+    // 2. Mostrar el contenido del panel (ahora que sabemos que el usuario está autenticado)
+    document.getElementById('auth-check').style.display = 'none';
+    document.getElementById('admin-nav').style.display = '';
+    document.getElementById('admin-wrapper').style.display = '';
+
+    // 3. Inicializar todos los módulos en paralelo
     try {
         await Promise.all([
             initProducts(),
@@ -21,7 +27,7 @@ import { initCategories } from './modules/categories.js'; // <-- NUEVA IMPORTACI
             initMaterials(),
             initSizes(),
             initPrices(),
-            initCategories() // <-- NUEVA LLAMADA
+            initCategories()
         ]);
         console.log("Panel de Administración inicializado con éxito.");
     } catch (error) {

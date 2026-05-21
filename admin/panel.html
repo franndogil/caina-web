@@ -11,7 +11,12 @@
 </head>
 <body>
 
-    <nav class="admin-nav">
+    <!-- Pantalla de carga: visible mientras se verifica la sesión -->
+    <div id="auth-check" style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; background: #f5f5f5;">
+        <p style="font-size: 18px; color: #666;">Verificando sesión...</p>
+    </div>
+
+    <nav class="admin-nav" style="display: none;" id="admin-nav">
         <div class="admin-nav-left">
             <span class="admin-nav-logo">Caina</span>
             <span class="admin-nav-badge">Admin</span>
@@ -21,7 +26,7 @@
         </div>
     </nav>
 
-    <div class="admin-wrapper">
+    <div class="admin-wrapper" style="display: none;" id="admin-wrapper">
 
         <div id="content">
             <div class="section-header">

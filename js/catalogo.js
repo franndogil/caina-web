@@ -5,9 +5,13 @@
 // =========================
 
 if (!window.supabaseClient) {
+  const config = window.SUPABASE_CONFIG;
+  if (!config || !config.url || !config.anonKey) {
+    console.error('SUPABASE_CONFIG no está configurado. Carga js/config.js primero.');
+  }
   window.supabaseClient = window.supabase.createClient(
-    "https://wuhqymfqxfakldkhgbpu.supabase.co",
-    "sb_publishable_DCspRV_g8Z6El-xTdEakTw_tv8s5tyk"
+    config.url,
+    config.anonKey
   );
 }
 

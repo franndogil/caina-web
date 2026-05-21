@@ -1,8 +1,9 @@
 (function () {
   "use strict";
 
-  var SUPABASE_URL = "https://wuhqymfqxfakldkhgbpu.supabase.co";
-  var SUPABASE_KEY = "sb_publishable_DCspRV_g8Z6El-xTdEakTw_tv8s5tyk";
+  var config = window.SUPABASE_CONFIG || {};
+  var SUPABASE_URL = config.url || "";
+  var SUPABASE_KEY = config.anonKey || "";
 
   // ── SVG helpers ──────────────────────────────────────────────────
   var CHEVRON_SM = '<svg width="12" height="12" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>';
