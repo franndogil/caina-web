@@ -63,5 +63,29 @@ export async function logout() {
     }
 }
 
+// Monitorear cambios de autenticación y redirigir si la sesión expira
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || !session) {
+        window.location.href = 'login.html';
+    }
+});
+
+// Logout automático por inactividad (30 minutos)
+let inactivityTimer;
+const INACTIVITY_TIME = 30 * 60 * 1000; // 30 minutos
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        logout();
+    }, INACTIVITY_TIME);
+}
+
+document.addEventListener('click', resetInactivityTimer);
+document.addEventListener('keydown', resetInactivityTimer);
+document.addEventListener('mousemove', resetInactivityTimer);
+
+resetInactivityTimer();
+
 // Exportamos supabase para poder usarlo en otros archivos si es necesario
 export { supabase };
