@@ -42,7 +42,7 @@
       </div>
     </li>
     <li class="nav-has-dd">
-      <button class="nav-dd-trigger" type="button">Cómo comprar ${CHEVRON_DD}</button>
+      <button class="nav-dd-trigger" type="button">Ayuda ${CHEVRON_DD}</button>
       <div class="nav-dd-panel">
         <a href="/faq.html">Preguntas frecuentes</a>
         <a href="/como-comprar.html">Cómo comprar</a>
@@ -99,7 +99,7 @@
 
   <div>
     <button class="nav-mobile-dd-trigger" type="button" onclick="cainaNavToggle(this)">
-      Cómo comprar ${CHEVRON_SM}
+      Ayuda ${CHEVRON_SM}
     </button>
     <div class="nav-mobile-dd-items">
       <a href="/faq.html">Preguntas frecuentes</a>

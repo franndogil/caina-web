@@ -27,8 +27,8 @@ body {
 }
 
 .page-header h1 {
-  font-family: 'Babydoll', sans-serif;
-  font-size: 3rem;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
   color: var(--white);
   line-height: 1.05;
   margin-bottom: .75rem;

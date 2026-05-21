@@ -32,6 +32,8 @@
   line-height: 1.75;
 }
 
+.about-block p.mt { margin-top: .75rem; }
+
 .values-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
