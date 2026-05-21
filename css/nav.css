@@ -1,211 +1,324 @@
-/* NAV */
-    nav {
-      position: fixed;
-      inset: 0 0 auto 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      height: 62px;
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(201,243,58,.12);
-    }
-    .nav-logo {
-      font-family: 'Babydoll';
-      font-size: 1.9rem;
-      letter-spacing: .1em;
-      color: var(--lime);
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      list-style: none;
-    }
-    .nav-links a {
-      color: rgba(255,255,255,.7);
-      text-decoration: none;
-      font-size: .85rem;
-      font-weight: 500;
-      letter-spacing: .04em;
-      transition: color .2s;
-    }
-    .nav-links a:hover { color: var(--lime); }
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-shrink: 0;
-    }
-    .nav-ig {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      color: var(--white);
-      text-decoration: none;
-      font-size: .82rem;
-      font-weight: 500;
-      transition: color .2s;
-    }
-    .nav-ig:hover { color: var(--lime); }
-    .nav-wa {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      background: #25D366;
-      color: var(--white);
-      text-decoration: none;
-      font-size: .82rem;
-      font-weight: 600;
-      padding: .42rem .9rem;
-      border-radius: 100px;
-      transition: opacity .2s, transform .2s;
-    }
-    .nav-wa:hover { opacity: .88; transform: translateY(-1px); }
+@font-face {
+  font-family: 'Babydoll';
+  src: url(../assets/fonts/Baby\ Doll.ttf) format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
-    /* NAV */
-    nav {
-      position: fixed;
-      inset: 0 0 auto 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 2rem;
-      height: 62px;
-      background: rgba(10,10,10,0.92);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(201,243,58,.12);
-    }
-    .nav-logo {
-      font-family: 'Babydoll';
-      font-size: 2rem;
-      letter-spacing: .1em;
-      color: var(--lime);
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      list-style: none;
-    }
-    .nav-links a {
-      color: rgba(255,255,255,.7);
-      text-decoration: none;
-      font-family: 'Babydoll';
-      font-size: 1.2rem;
-      font-weight: 500;
-      letter-spacing: .04em;
-      transition: color .2s;
-    }
-    .nav-links a:hover { color: var(--lime); }
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-shrink: 0;
-    }
-    .nav-right img{
-      width: 25px;
-    }
-    .nav-wa {
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-      background: #25D366;
-      color: var(--white);
-      text-decoration: none;
-      font-size: .82rem;
-      font-weight: 600;
-      padding: .42rem .9rem;
-      border-radius: 100px;
-      transition: opacity .2s, transform .2s;
-    }
-    .nav-wa:hover { opacity: .88; transform: translateY(-1px); }
+/* ─── NAV BASE ─────────────────────────────────────────────────── */
+nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 62px;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(201,243,58,.12);
+}
 
-    .nav-back {
-        display: inline-flex;
-        align-items: center;
-        gap: .4rem;
+/* ─── LOGO ─────────────────────────────────────────────────────── */
+.nav-logo {
+  font-family: 'Babydoll';
+  font-size: 2rem;
+  letter-spacing: .1em;
+  color: var(--lime);
+  text-decoration: none;
+  flex-shrink: 0;
+  line-height: 1;
+}
 
-        color: rgba(255,255,255,.7);
-        text-decoration: none;
+/* ─── LINKS LIST ────────────────────────────────────────────────── */
+.nav-links {
+  display: flex;
+  align-items: stretch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 62px;
+}
 
-        font-size: .85rem;
-        font-weight: 500;
-        letter-spacing: .04em;
+.nav-links > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
-        transition: color .2s;
-    }
+/* ─── LINK / TRIGGER BASE ───────────────────────────────────────── */
+.nav-links > li > a,
+.nav-dd-trigger {
+  display: flex !important;
+  align-items: center !important;
+  gap: .3rem;
+  padding: 0 .82rem !important;
+  height: 100%;
+  width: auto !important;
+  color: rgba(255,255,255,.72) !important;
+  text-decoration: none;
+  font-family: 'Babydoll', sans-serif !important;
+  font-size: 1.12rem !important;
+  font-weight: 500;
+  letter-spacing: .04em;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  cursor: pointer;
+  transition: color .2s !important;
+  white-space: nowrap;
+  line-height: 1;
+}
 
-    .nav-back:hover {
-        color: var(--lime);
-    }
-    /* HAMBURGER */
-    .nav-burger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: .3rem;
-      background: none;
-      border: none;
-      width: auto;
-      margin: 0;
-    }
-    .nav-burger:hover { background: none; color: inherit; }
-    .nav-burger span {
-      display: block;
-      width: 22px; height: 2px;
-      background: var(--white);
-      border-radius: 2px;
-      transition: all .3s;
-    }
-    .nav-mobile {
-      display: none;
-      position: fixed;
-      top: 62px; left: 0; right: 0;
-      background: rgba(10,10,10,.97);
-      border-bottom: 1px solid rgba(201,243,58,.12);
-      padding: 1.5rem 2rem;
-      flex-direction: column;
-      gap: 1rem;
-      z-index: 99;
-    }
-    .nav-mobile.open { display: flex; }
-    .nav-mobile a {
-      color: rgba(255,255,255,.8);
-      text-decoration: none;
-      font-family: 'Babydoll';
-      font-size: 1.1rem;
-      font-weight: 500;
-      padding: .5rem 0;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      transition: color .2s;
-    }
-    .nav-mobile a:hover { color: var(--lime); }
-    .nav-mobile a.wa-mobile {
-      color: #25D366;
-      border-bottom: none;
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
+.nav-links > li > a:hover,
+.nav-dd-trigger:hover,
+.nav-has-dd:hover .nav-dd-trigger {
+  color: var(--lime) !important;
+  background: none !important;
+}
 
-    @media (max-width: 768px) {
-      .nav-links, .nav-ig { display: none; }
-      .nav-burger { display: flex; }
-    }
+/* ─── NOVEDADES BADGE ───────────────────────────────────────────── */
+.nav-badge-new {
+  position: relative;
+}
+.nav-badge-new::after {
+  content: "NEW";
+  position: absolute;
+  top: 11px;
+  right: 1px;
+  background: var(--lime);
+  color: var(--black);
+  font-size: .42rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: .1em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.5;
+}
 
-    @font-face {
-      font-family: 'Babydoll';
-      src: url(../assets/fonts/Baby\ Doll.ttf) format('truetype');
-      ont-weight: normal;
-      font-style: normal;
-    }
+/* ─── DROPDOWN CHEVRON ──────────────────────────────────────────── */
+.nav-dd-chevron {
+  width: 9px;
+  height: 9px;
+  transition: transform .22s;
+  opacity: .5;
+  flex-shrink: 0;
+}
+.nav-has-dd:hover .nav-dd-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* ─── HOVER BRIDGE ──────────────────────────────────────────────── */
+/* Rellena el hueco entre el li y el panel para no perder el hover */
+.nav-has-dd::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
+/* ─── DROPDOWN PANEL ────────────────────────────────────────────── */
+.nav-dd-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  min-width: 200px;
+  background: rgba(12,12,12,0.98);
+  border: 1px solid rgba(201,243,58,.18);
+  border-radius: 10px;
+  padding: .45rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s, transform .18s;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0,0,0,.6);
+  z-index: 300;
+}
+
+.nav-has-dd:hover .nav-dd-panel {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-dd-panel a {
+  display: block;
+  padding: .52rem .85rem;
+  color: rgba(255,255,255,.78);
+  text-decoration: none;
+  font-family: 'Babydoll', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: .03em;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.nav-dd-panel a:hover {
+  background: rgba(201,243,58,.1);
+  color: var(--lime);
+}
+
+.nav-dd-loading {
+  display: block;
+  padding: .52rem .85rem;
+  color: rgba(255,255,255,.3);
+  font-size: .8rem;
+  font-style: italic;
+}
+
+/* ─── RIGHT SIDE ────────────────────────────────────────────────── */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+
+.nav-ig {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  color: rgba(255,255,255,.7);
+  text-decoration: none;
+  font-size: .78rem;
+  font-weight: 500;
+  transition: color .2s;
+}
+.nav-ig:hover { color: var(--lime); }
+
+.nav-wa {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: #25D366;
+  color: #fff;
+  text-decoration: none;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: .4rem .85rem;
+  border-radius: 100px;
+  transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+}
+.nav-wa:hover { opacity: .88; transform: translateY(-1px); }
+.nav-wa img { width: 15px; display: block; }
+
+/* ─── HAMBURGER ─────────────────────────────────────────────────── */
+.nav-burger {
+  display: none;
+  flex-direction: column !important;
+  gap: 5px;
+  cursor: pointer;
+  padding: .35rem !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+}
+.nav-burger:hover { background: none !important; color: inherit !important; }
+.nav-burger span {
+  display: block;
+  width: 22px; height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all .25s;
+}
+
+/* ─── MOBILE NAV ────────────────────────────────────────────────── */
+.nav-mobile {
+  display: none;
+  position: fixed;
+  top: 62px; left: 0; right: 0;
+  background: rgba(10,10,10,.98);
+  border-bottom: 1px solid rgba(201,243,58,.12);
+  padding: .75rem 0 1.5rem;
+  flex-direction: column;
+  z-index: 199;
+  max-height: calc(100svh - 62px);
+  overflow-y: auto;
+}
+.nav-mobile.open { display: flex; }
+
+.nav-mobile-item {
+  display: block;
+  padding: .7rem 1.75rem;
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  font-family: 'Babydoll';
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: color .2s;
+}
+.nav-mobile-item:hover { color: var(--lime); }
+
+.nav-mobile-dd-trigger {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: .7rem 1.75rem !important;
+  color: rgba(255,255,255,.8) !important;
+  font-family: 'Babydoll', sans-serif !important;
+  font-size: 1.1rem !important;
+  font-weight: 500;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  text-align: left;
+  cursor: pointer;
+  transition: color .2s !important;
+}
+.nav-mobile-dd-trigger:hover { color: var(--lime) !important; background: none !important; }
+.nav-mobile-dd-trigger svg { transition: transform .22s; flex-shrink: 0; }
+.nav-mobile-dd-trigger.open svg { transform: rotate(180deg); }
+
+.nav-mobile-dd-items {
+  display: none;
+  padding: .2rem 1.75rem .35rem 3rem;
+  flex-direction: column;
+}
+.nav-mobile-dd-items.open { display: flex; }
+.nav-mobile-dd-items a {
+  padding: .48rem 0;
+  color: rgba(255,255,255,.6);
+  text-decoration: none;
+  font-family: 'Babydoll', sans-serif;
+  font-size: 1rem;
+  letter-spacing: .03em;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: color .2s;
+}
+.nav-mobile-dd-items a:last-child { border-bottom: none; }
+.nav-mobile-dd-items a:hover { color: var(--lime); }
+
+.nav-mobile-wa {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  justify-content: center;
+  margin: 1rem 1.75rem 0;
+  background: #25D366;
+  color: #fff;
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 600;
+  padding: .75rem 1rem;
+  border-radius: 100px;
+}
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .nav-links, .nav-ig, .nav-wa { display: none; }
+  .nav-burger { display: flex; }
+}

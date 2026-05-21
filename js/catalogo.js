@@ -13,12 +13,14 @@ if (!window.supabaseClient) {
 
 const supabase = window.supabaseClient;
 
-let productos           = [];
-let variantes           = [];
-let materiales          = [];
-let tamanios            = [];
-let precios             = [];
-let imagenesPorProducto = {}; // { id_producto: [{ path_imagen, publicUrl, orden }] }
+let productos              = [];
+let variantes              = [];
+let materiales             = [];
+let tamanios               = [];
+let precios                = [];
+let todasCategorias        = [];
+let imagenesPorProducto    = {};
+let categoriasPorProducto  = {}; // { id_producto: [id_categoria, ...] }
 
 let sel = {
   producto:   null,
@@ -35,7 +37,7 @@ let sortBy = "nombre";
 // =========================
 
 async function cargarTodo() {
-  const [prods, vars, mats, tams, pres, imgs] = await Promise.all([
+  const [prods, vars, mats, tams, pres, imgs, cats, catRels] = await Promise.all([
     supabase.from("producto").select("*, tipo(id_tipo, nombre_tipo)"),
     supabase.from("variante").select("*"),
     supabase.from("material").select("*"),
@@ -47,13 +49,16 @@ async function cargarTodo() {
       precio_usa_tamanio(id_tamanio)
     `),
     supabase.from("imagen_producto").select("*").order("orden"),
+    supabase.from("categoria").select("id_categoria, nombre_categoria"),
+    supabase.from("producto_pertenece_categoria").select("id_producto, id_categoria"),
   ]);
 
-  productos  = prods.data || [];
-  variantes  = vars.data  || [];
-  materiales = mats.data  || [];
-  tamanios   = tams.data  || [];
-  precios    = pres.data  || [];
+  productos       = prods.data || [];
+  variantes       = vars.data  || [];
+  materiales      = mats.data  || [];
+  tamanios        = tams.data  || [];
+  precios         = pres.data  || [];
+  todasCategorias = cats.data  || [];
 
   // Construir mapa id_producto → imágenes con URL pública
   imagenesPorProducto = {};
@@ -63,8 +68,22 @@ async function cargarTodo() {
     imagenesPorProducto[img.id_producto].push({ ...img, publicUrl });
   });
 
+  // Construir mapa id_producto → [id_categoria, ...]
+  categoriasPorProducto = {};
+  (catRels.data || []).forEach(r => {
+    if (!categoriasPorProducto[r.id_producto]) categoriasPorProducto[r.id_producto] = [];
+    categoriasPorProducto[r.id_producto].push(r.id_categoria);
+  });
+
+  aplicarFiltroDesdeURL();
   renderProductos();
   if (window.renderCarrito) window.renderCarrito();
+
+  const productoParam = new URLSearchParams(window.location.search).get('producto');
+  if (productoParam) {
+    const id = parseInt(productoParam);
+    if (!isNaN(id)) abrirProducto(id);
+  }
 }
 
 // =========================
@@ -127,12 +146,54 @@ function getPrecio(id_tipo, id_material, id_tamanio) {
 // =========================
 
 const SORTS = [
-  { key: "nombre", label: "A–Z" },
-  { key: "tipo",   label: "Tipo" },
+  { key: "nombre",    label: "A - Z" },
+  { key: "tipo",      label: "Producto" },
+  { key: "categoria", label: "Categoría" },
+  { key: "tamanio",   label: "Tamaños" },
+  { key: "material",  label: "Material" },
 ];
 
+// =========================
+// FILTRADO POR URL
+// =========================
+
+let filtroActivo = null; // { type: "tipo"|"categoria", value: Number, nombre: String }
+
+function aplicarFiltroDesdeURL() {
+  const params = new URLSearchParams(window.location.search);
+  const tipoId = params.get("tipo")      ? parseInt(params.get("tipo"))      : null;
+  const catId  = params.get("categoria") ? parseInt(params.get("categoria")) : null;
+
+  if (tipoId !== null) {
+    const tipo = productos.find(p => p.tipo?.id_tipo === tipoId)?.tipo;
+    filtroActivo = tipo ? { type: "tipo", value: tipoId, nombre: tipo.nombre_tipo } : null;
+  } else if (catId !== null) {
+    const cat = todasCategorias.find(c => c.id_categoria === catId);
+    filtroActivo = cat ? { type: "categoria", value: catId, nombre: cat.nombre_categoria } : null;
+  } else {
+    filtroActivo = null;
+  }
+
+  if (filtroActivo) {
+    document.title = `CAINA | ${filtroActivo.nombre}`;
+  }
+}
+
+function productosBase() {
+  if (!filtroActivo) return [...productos];
+  if (filtroActivo.type === "tipo") {
+    return productos.filter(p => p.tipo?.id_tipo === filtroActivo.value);
+  }
+  if (filtroActivo.type === "categoria") {
+    return productos.filter(p =>
+      (categoriasPorProducto[p.id_producto] || []).includes(filtroActivo.value)
+    );
+  }
+  return [...productos];
+}
+
 function productosSorted() {
-  return [...productos].sort((a, b) => {
+  return productosBase().sort((a, b) => {
     if (sortBy === "tipo") {
       const ta = a.tipo?.nombre_tipo ?? "";
       const tb = b.tipo?.nombre_tipo ?? "";
@@ -152,36 +213,152 @@ function renderProductos() {
   }
 
   const sorted = productosSorted();
+
+  if (!sorted.length && filtroActivo) {
+    cont.innerHTML = `
+      <div class="card">
+        <div class="card-name">${escapar(filtroActivo.nombre)}</div>
+        <p class="card-desc" style="color:var(--muted)">No hay productos disponibles en esta categoría todavía.</p>
+        <a href="/pedido.html" class="sort-chip" style="text-decoration:none;display:inline-flex;margin-top:.5rem">← Ver todos los productos</a>
+      </div>
+    `;
+    return;
+  }
+
   let contenido;
 
   if (sortBy === "tipo") {
     const grupos = sorted.reduce((acc, p) => {
-      const cat = p.tipo?.nombre_tipo ?? "Sin tipo";
-      (acc[cat] = acc[cat] || []).push(p);
+      const nombre = p.tipo?.nombre_tipo ?? "Sin tipo";
+      (acc[nombre] = acc[nombre] || []).push(p);
       return acc;
     }, {});
 
     let offset = 0;
-    contenido = Object.entries(grupos).map(([cat, items]) => {
+    contenido = Object.entries(grupos).map(([nombre, items]) => {
       const html = `
         <div class="categoria-grupo">
-          <h4 class="categoria-titulo">${escapar(cat)}</h4>
+          <h4 class="categoria-titulo">${escapar(nombre)}</h4>
           ${productoGrid(items, offset)}
         </div>
       `;
       offset += items.length;
       return html;
     }).join("");
+
+  } else if (sortBy === "categoria") {
+    const catsOrdenadas = [...todasCategorias].sort((a, b) =>
+      a.nombre_categoria.localeCompare(b.nombre_categoria, "es")
+    );
+
+    const grupos = [];
+    catsOrdenadas.forEach(cat => {
+      const items = sorted.filter(p =>
+        (categoriasPorProducto[p.id_producto] || []).includes(cat.id_categoria)
+      );
+      if (items.length) grupos.push({ nombre: cat.nombre_categoria, items });
+    });
+
+    const sinCat = sorted.filter(p => !(categoriasPorProducto[p.id_producto]?.length > 0));
+    if (sinCat.length) grupos.push({ nombre: "Sin categoría", items: sinCat });
+
+    let offset = 0;
+    contenido = grupos.map(({ nombre, items }) => {
+      const html = `
+        <div class="categoria-grupo">
+          <h4 class="categoria-titulo">${escapar(nombre)}</h4>
+          ${productoGrid(items, offset)}
+        </div>
+      `;
+      offset += items.length;
+      return html;
+    }).join("");
+
+  } else if (sortBy === "tamanio") {
+    const tamGrupos = {};
+    sorted.forEach(p => {
+      const ids = [...new Set(
+        variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_tamanio)
+      )];
+      ids.forEach(tid => {
+        if (!tamGrupos[tid]) tamGrupos[tid] = [];
+        tamGrupos[tid].push(p);
+      });
+    });
+
+    const tamsUsados = tamanios
+      .filter(t => tamGrupos[t.id_tamanio])
+      .sort((a, b) => {
+        if ((a.unidad || "") !== (b.unidad || "")) return (a.unidad || "").localeCompare(b.unidad || "");
+        return parseFloat(a.valor) - parseFloat(b.valor);
+      });
+
+    let offset = 0;
+    contenido = tamsUsados.map(t => {
+      const items = tamGrupos[t.id_tamanio];
+      const label = t.unidad ? `${t.valor} ${t.unidad}` : t.valor;
+      const html = `
+        <div class="categoria-grupo">
+          <h4 class="categoria-titulo">${escapar(label)}</h4>
+          ${productoGrid(items, offset)}
+        </div>
+      `;
+      offset += items.length;
+      return html;
+    }).join("");
+
+  } else if (sortBy === "material") {
+    const matGrupos = {};
+    sorted.forEach(p => {
+      const ids = [...new Set(
+        variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_material)
+      )];
+      ids.forEach(mid => {
+        if (!matGrupos[mid]) matGrupos[mid] = [];
+        matGrupos[mid].push(p);
+      });
+    });
+
+    const matsUsados = materiales
+      .filter(m => matGrupos[m.id_material])
+      .sort((a, b) => a.nombre_material.localeCompare(b.nombre_material, "es"));
+
+    let offset = 0;
+    contenido = matsUsados.map(m => {
+      const items = matGrupos[m.id_material];
+      const html = `
+        <div class="categoria-grupo">
+          <h4 class="categoria-titulo">${escapar(m.nombre_material)}</h4>
+          ${productoGrid(items, offset)}
+        </div>
+      `;
+      offset += items.length;
+      return html;
+    }).join("");
+
   } else {
     contenido = productoGrid(sorted);
   }
 
+  const tituloCard = filtroActivo ? escapar(filtroActivo.nombre) : "Productos";
+  const subCard    = filtroActivo
+    ? `${sorted.length} producto${sorted.length !== 1 ? "s" : ""} encontrado${sorted.length !== 1 ? "s" : ""}`
+    : "Tocá un diseño para elegir material, tamaño y cantidad.";
+  const verTodos   = filtroActivo
+    ? `<a href="/pedido.html" class="sort-chip" style="text-decoration:none;display:inline-flex">← Ver todos</a>`
+    : "";
+
   cont.innerHTML = `
     <div class="card">
-      <div class="card-name">Productos</div>
-      <p class="card-desc">Tocá un diseño para elegir material, tamaño y cantidad.</p>
+      <div class="card-name">${tituloCard}</div>
+      <p class="card-desc">${subCard}</p>
       <div class="sort-row">
-        ${SORTS.map(s => `
+        ${verTodos}
+        ${SORTS.filter(s => {
+          if (s.key === "tipo"      && filtroActivo?.type === "tipo")      return false;
+          if (s.key === "categoria" && filtroActivo?.type === "categoria") return false;
+          return true;
+        }).map(s => `
           <button class="sort-chip ${sortBy === s.key ? "sort-chip--active" : ""}"
                   onclick="setSortBy('${s.key}')">
             ${s.label}

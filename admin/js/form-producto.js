@@ -10,6 +10,7 @@ const productTypeSelect = document.getElementById('product-type');
 const productMaterialsContainer = document.getElementById('product-materials');
 const productSizesContainer = document.getElementById('product-sizes');
 const productCategoriesContainer = document.getElementById('product-categories');
+const productNovedadCheckbox = document.getElementById('product-novedad');
 const saveButton = document.getElementById('save-product-button');
 const editModeNotice = document.getElementById('edit-mode-notice');
 const imagesGrid = document.getElementById('images-grid');
@@ -295,6 +296,7 @@ async function loadProductForEdit() {
     productNameInput.value = product.nombre;
     productDescriptionInput.value = product.descripcion;
     productTypeSelect.value = product.id_tipo;
+    productNovedadCheckbox.checked = !!product.esNovedad;
 
     const usedMaterialIds = new Set(existingVariants.map(v => v.id_material));
     const usedSizeIds = new Set(existingVariants.map(v => v.id_tamanio));
@@ -321,7 +323,8 @@ async function handleFormSubmit(e) {
         const productData = {
             nombre: productNameInput.value,
             descripcion: productDescriptionInput.value,
-            id_tipo: productTypeSelect.value
+            id_tipo: productTypeSelect.value,
+            esNovedad: productNovedadCheckbox.checked
         };
 
         let savedProduct;

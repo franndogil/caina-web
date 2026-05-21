@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>CAINA | Novedades</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/nav.css">
+  <style>
+    body { padding-top: 62px; }
+
+    /* ── Sección principal ── */
+    .novedades-section {
+      min-height: calc(100vh - 62px);
+      padding: 3.5rem 1.5rem 6rem;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .novedades-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .nov-label {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: .6rem;
+    }
+    .novedades-header h1 {
+      font-family: 'Babydoll', sans-serif;
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 1.05;
+      margin-bottom: .75rem;
+    }
+    .novedades-header p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* ── Grid ── */
+    .novedades-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Tarjeta de novedad ── */
+    .novedad-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--white);
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      cursor: pointer;
+    }
+    .novedad-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201,243,58,.3);
+      box-shadow: 0 8px 28px rgba(201,243,58,.1);
+    }
+
+    .novedad-img-wrap {
+      position: relative;
+      aspect-ratio: 1;
+      background: #111;
+      overflow: hidden;
+    }
+    .novedad-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s;
+    }
+    .novedad-card:hover .novedad-img-wrap img {
+      transform: scale(1.04);
+    }
+    .novedad-img-ph {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      opacity: .35;
+    }
+
+    .novedad-badge {
+      position: absolute;
+      top: .6rem;
+      left: .6rem;
+      background: var(--lime);
+      color: var(--black);
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    .novedad-info {
+      padding: .75rem .9rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+    }
+    .novedad-nombre {
+      font-size: .9rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .novedad-tipo {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    /* ── Estado vacío ── */
+    .novedades-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 5rem 1rem;
+      text-align: center;
+    }
+    .novedades-empty .empty-icon { font-size: 3rem; opacity: .35; }
+    .novedades-empty p { color: var(--muted); font-size: .95rem; max-width: 300px; }
+    .novedades-empty a {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .5rem;
+      padding: .65rem 1.5rem;
+      background: var(--lime);
+      color: var(--black);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .88rem;
+      border-radius: 100px;
+      transition: opacity .2s;
+    }
+    .novedades-empty a:hover { opacity: .85; }
+
+    /* ── CTA inferior ── */
+    .novedades-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .novedades-cta a {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .7rem 1.75rem;
+      border: 1px solid rgba(255,255,255,.15);
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: .88rem;
+      font-weight: 500;
+      border-radius: 100px;
+      transition: border-color .2s, color .2s;
+    }
+    .novedades-cta a:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ── Skeleton loader ── */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .skeleton-card {
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--gray-mid);
+    }
+    .skeleton-img {
+      aspect-ratio: 1;
+      background: rgba(255,255,255,.05);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .skeleton-text {
+      height: .75rem;
+      margin: .75rem .9rem .4rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,.05);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .skeleton-text.short { width: 55%; margin-bottom: .9rem; }
+    @keyframes pulse {
+      0%, 100% { opacity: .4; }
+      50% { opacity: .8; }
+    }
+
+    @media (max-width: 480px) {
+      .novedades-header h1 { font-size: 2.2rem; }
+      .novedades-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<div id="nav-root"></div>
+
+<main class="novedades-section">
+  <div class="novedades-header">
+    <span class="nov-label">✦ Lo último de CAINA</span>
+    <h1>Novedades</h1>
+    <p>Los productos más nuevos, recién incorporados al catálogo.</p>
+  </div>
+
+  <div id="novedades-contenido">
+    <!-- Skeleton mientras carga -->
+    <div class="skeleton-grid">
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+      <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+    </div>
+  </div>
+
+  <div class="novedades-cta" id="novedades-cta" style="display:none">
+    <a href="/pedido.html">Ver todo el catálogo →</a>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">CAINA</span>
+    <p>Gráfica personalizada · Zona Sur, Argentina</p>
+  </div>
+  <div class="footer-social">
+    <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" class="social-btn" title="WhatsApp"></a>
+    <a href="https://www.instagram.com/caina.stickers/" target="_blank" class="social-btn" title="Instagram"></a>
+  </div>
+  <div class="powered-by">
+    <p>Powered By<a href="https://fmdcomputacion.com/"><img src="/assets/sponsors/fmdcomputacion.png" alt=""></a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/nav.js"></script>
+<script>
+(async function () {
+  // Esperar a que nav.js inicialice supabaseClient
+  await new Promise(function (resolve) {
+    if (window.supabaseClient) return resolve();
+    var t = setInterval(function () {
+      if (window.supabaseClient) { clearInterval(t); resolve(); }
+    }, 30);
+    setTimeout(function () { clearInterval(t); resolve(); }, 4000);
+  });
+
+  var db   = window.supabaseClient;
+  var cont = document.getElementById('novedades-contenido');
+  var cta  = document.getElementById('novedades-cta');
+
+  if (!db) {
+    cont.innerHTML = '<div class="novedades-empty"><div class="empty-icon">⚠️</div><p>No se pudo cargar el catálogo. Intentá de nuevo más tarde.</p></div>';
+    return;
+  }
+
+  var results = await Promise.all([
+    db.from('producto').select('*, tipo(nombre_tipo)').eq('esNovedad', true).order('id_producto', { ascending: false }),
+    db.from('imagen_producto').select('*').order('orden'),
+  ]);
+
+  var productos = results[0].data || [];
+  var imagenes  = results[1].data || [];
+
+  // Mapa id_producto → primera URL pública
+  var imgMap = {};
+  imagenes.forEach(function (img) {
+    if (imgMap[img.id_producto]) return; // solo la primera (orden ASC)
+    var pub = db.storage.from('productos').getPublicUrl(img.path_imagen);
+    imgMap[img.id_producto] = pub.data.publicUrl;
+  });
+
+  if (!productos.length) {
+    cont.innerHTML = [
+      '<div class="novedades-empty">',
+      '  <div class="empty-icon">✨</div>',
+      '  <p>Pronto vas a encontrar acá los productos más nuevos. ¡Seguinos para enterarte primero!</p>',
+      '  <a href="/pedido.html">Ver todo el catálogo</a>',
+      '</div>'
+    ].join('');
+    return;
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var cards = productos.map(function (p) {
+    var img = imgMap[p.id_producto];
+    var imgHtml = img
+      ? '<img src="' + esc(img) + '" alt="' + esc(p.nombre) + '" loading="lazy">'
+      : '<div class="novedad-img-ph">🎨</div>';
+
+    return [
+      '<a href="/pedido.html?producto=' + p.id_producto + '" class="novedad-card">',
+      '  <div class="novedad-img-wrap">',
+      '    ' + imgHtml,
+      '    <span class="novedad-badge">Nuevo</span>',
+      '  </div>',
+      '  <div class="novedad-info">',
+      '    <span class="novedad-nombre">' + esc(p.nombre) + '</span>',
+      '    <span class="novedad-tipo">' + esc(p.tipo ? p.tipo.nombre_tipo : '') + '</span>',
+      '  </div>',
+      '</a>'
+    ].join('');
+  }).join('');
+
+  cont.innerHTML = '<div class="novedades-grid">' + cards + '</div>';
+  cta.style.display = 'block';
+})();
+</script>
+</body>
+</html>
