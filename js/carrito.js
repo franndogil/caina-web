@@ -189,6 +189,31 @@ function enviarPedido() {
 }
 
 // ========================
+// AUTO-INYECCIÓN DEL BOTÓN
+// ========================
+
+(function injectCarritoFloat() {
+  if (document.querySelector(".carrito-float")) return;
+
+  const enPedido = window.location.pathname.includes("pedido");
+  const el = enPedido
+    ? Object.assign(document.createElement("button"), { className: "carrito-float", onclick: irAlCarrito })
+    : Object.assign(document.createElement("a"),      { className: "carrito-float", href: "/pedido.html#resumen" });
+
+  el.setAttribute("aria-label", "Ver pedido");
+  el.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    Ver pedido
+    <span class="carrito-float-badge" id="carrito-badge"></span>
+  `;
+  document.body.appendChild(el);
+})();
+
+// ========================
 // EXPORTS
 // ========================
 
