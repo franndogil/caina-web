@@ -67,13 +67,12 @@ function render() {
               ${pu != null ? `<span class="item-precio-u">$${format(Math.round(pu))}/u</span>` : ""}
             </div>
 
-            <div class="item-derecha">
-              <div class="item-actions">
-                <button onclick="restar(${index})">−</button>
-                <button onclick="sumar(${index})">+</button>
-                <button onclick="eliminar(${index})" class="btn-eliminar">✕</button>
-              </div>
-              ${sub != null ? `<span class="item-subtotal">$${format(sub)}</span>` : ""}
+            ${sub != null ? `<span class="item-subtotal">$${format(sub)}</span>` : ""}
+
+            <div class="item-actions">
+              <button class="btn-accion" onclick="restar(${index})">−</button>
+              <button class="btn-accion" onclick="sumar(${index})">+</button>
+              <button class="btn-accion btn-eliminar" onclick="eliminar(${index})">✕</button>
             </div>
           </div>
         `;

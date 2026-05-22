@@ -104,11 +104,12 @@
     .resumen {
       margin-top: 5rem;
       text-align: center;
+      transition: transform .2s;
     }
 
     #lista {
       color: #bbb;
-      max-width: 480px;
+      max-width: 540px;
       margin: 0 auto 1rem;
     }
 
@@ -132,36 +133,6 @@
 
     .btn-primary:hover {
       transform: translateY(-2px);
-    }
-
-    .resumen {
-        transition: transform .2s;
-    }
-
-    .item-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: .5rem;
-    }
-
-    .item-info {
-        font-size: .85rem;
-        color: #ccc;
-    }
-
-    .item-actions {
-        display: flex;
-        align-items: center;
-        gap: .4rem;
-    }
-
-    .item-actions button {
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        border-radius: 6px;
-        font-size: .8rem;
     }
 
     /* ===== PRODUCTOS DINÁMICOS ===== */
@@ -371,14 +342,13 @@
       color: #fff;
     }
 
-    /* ===== ITEMS DEL CARRITO (nuevo layout) ===== */
+    /* ===== ITEMS DEL CARRITO ===== */
 
     .item-row {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: .75rem;
-      padding: .6rem 0;
+      gap: 1rem;
+      padding: .75rem 0;
       border-bottom: 1px solid rgba(255,255,255,.05);
     }
 
@@ -415,33 +385,53 @@
       color: #555;
     }
 
-    .item-derecha {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: .25rem;
+    .item-subtotal {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      color: var(--lime);
       flex-shrink: 0;
+      text-align: center;
+      min-width: 70px;
     }
 
     .item-actions {
       display: flex;
       align-items: center;
-      gap: .3rem;
+      gap: .4rem;
+      flex-shrink: 0;
     }
 
-    .item-actions button {
-      width: 26px;
-      height: 26px;
-      padding: 0;
-      margin: 0;
-      border-radius: 6px;
-      font-size: .8rem;
+    .btn-accion {
+      width: 36px !important;
+      height: 36px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      background: rgba(255,255,255,.06) !important;
+      color: var(--white) !important;
+      border-radius: 8px !important;
+      font-size: 1rem !important;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
     }
 
-    .item-subtotal {
-      font-size: .8rem;
-      color: var(--lime);
-      font-weight: 600;
+    .btn-accion:hover {
+      background: var(--lime) !important;
+      border-color: var(--lime) !important;
+      color: var(--black) !important;
+    }
+
+    .btn-eliminar {
+      border-color: rgba(255,80,80,.3) !important;
+    }
+
+    .btn-eliminar:hover {
+      background: rgba(255,80,80,.8) !important;
+      border-color: rgba(255,80,80,.8) !important;
+      color: #fff !important;
     }
 
     /* ===== TRAMO BADGE EN CARRITO ===== */
