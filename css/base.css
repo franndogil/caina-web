@@ -31,7 +31,7 @@
 .carrito-float {
   position: fixed;
   bottom: 1.75rem;
-  right: 1.75rem;
+  left: 1.75rem;
   z-index: 200;
   width: auto;
   display: none;

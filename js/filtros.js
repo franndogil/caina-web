@@ -1,219 +1,307 @@
 (function () {
 'use strict';
 
-// ── datos compartidos entre instancias ──────────────────────────────────────
-let _datos = null;
-let _cargando = null;
+// ── Singleton data cache compartido entre todas las instancias ─────────────
+let _datos   = null;
+let _promesa = null;
 
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g,
-    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function clonar(f) {
+  return { cats: new Set(f.cats), tipos: new Set(f.tipos), mats: new Set(f.mats), tams: new Set(f.tams) };
 }
 
 async function esperarSupabase() {
-  return new Promise(resolve => {
-    if (window.supabaseClient) return resolve(window.supabaseClient);
-    const t = setInterval(() => {
-      if (window.supabaseClient) { clearInterval(t); resolve(window.supabaseClient); }
-    }, 30);
-    setTimeout(() => { clearInterval(t); resolve(null); }, 5000);
+  return new Promise(r => {
+    if (window.supabaseClient) return r(window.supabaseClient);
+    const t = setInterval(() => { if (window.supabaseClient) { clearInterval(t); r(window.supabaseClient); } }, 30);
+    setTimeout(() => { clearInterval(t); r(null); }, 5000);
   });
 }
 
-async function cargarDatosGlobales() {
-  if (_datos) return _datos;
-  if (_cargando) return _cargando;
+async function cargarDatos() {
+  if (_datos)   return _datos;
+  if (_promesa) return _promesa;
 
-  _cargando = (async () => {
+  _promesa = (async () => {
     const db = await esperarSupabase();
     if (!db) return null;
 
-    const [prods, vars, mats, tams, imgs] = await Promise.all([
+    const [prods, vars, mats, tams, imgs, cats, catRels, tipoMat, tipoTam] = await Promise.all([
       db.from('producto').select('*, tipo(id_tipo, nombre_tipo)'),
       db.from('variante').select('id_variante, id_producto, id_material, id_tamanio'),
       db.from('material').select('id_material, nombre_material'),
       db.from('tamanio').select('id_tamanio, valor, unidad'),
       db.from('imagen_producto').select('id_producto, path_imagen, orden').order('orden'),
+      db.from('categoria').select('id_categoria, nombre_categoria'),
+      db.from('producto_pertenece_categoria').select('id_producto, id_categoria'),
+      db.from('tipo_material').select('id_tipo, id_material'),
+      db.from('tipo_tamanio').select('id_tipo, id_tamanio'),
     ]);
 
-    // mapa id_producto → primera imagen pública
-    const imgs_map = {};
+    const imgMap = {};
     (imgs.data || []).forEach(img => {
-      if (imgs_map[img.id_producto]) return;
-      const { data: { publicUrl } } = db.storage.from('productos').getPublicUrl(img.path_imagen);
-      imgs_map[img.id_producto] = publicUrl;
+      if (!imgMap[img.id_producto])
+        imgMap[img.id_producto] = db.storage.from('productos').getPublicUrl(img.path_imagen).data.publicUrl;
+    });
+
+    const catPorProd = {};
+    (catRels.data || []).forEach(r => {
+      (catPorProd[r.id_producto] ??= []).push(r.id_categoria);
     });
 
     _datos = {
-      productos:  prods.data || [],
-      variantes:  vars.data  || [],
-      materiales: mats.data  || [],
-      tamanios:   tams.data  || [],
-      imagenes:   imgs_map,
+      productos:   prods.data   || [],
+      variantes:   vars.data    || [],
+      materiales:  mats.data    || [],
+      tamanios:    tams.data    || [],
+      categorias:  cats.data    || [],
+      tipoMaterial: tipoMat.data || [],
+      tipoTamanio:  tipoTam.data || [],
+      catPorProd,
+      imgMap,
     };
     return _datos;
   })();
 
-  return _cargando;
+  return _promesa;
 }
 
-// ── componente de filtros ────────────────────────────────────────────────────
-class FiltrosGrid {
-  constructor(contenedorId, opts = {}) {
-    this.id        = contenedorId;
-    this.novedades = opts.novedades || false; // solo productos con esNovedad=true
-    this.tipoSel   = null;
-    this.matSel    = null;
-    this.tamSel    = null;
+// ─────────────────────────────────────────────────────────────────────────────
+class SidebarFiltros {
+  constructor(cid, opts = {}) {
+    this.cid       = cid;
+    this.novedades = opts.novedades || false;
+    this.onFiltrar = opts.onFiltrar || null;   // modo externo (pedido.html)
     this.datos     = null;
+    this._open     = false;
+    this.f = { cats: new Set(), tipos: new Set(), mats: new Set(), tams: new Set() };
   }
 
   async init() {
-    const el = document.getElementById(this.id);
+    const el = document.getElementById(this.cid);
     if (!el) return;
-    el.innerHTML = '<p class="filtros-loading">Cargando…</p>';
-
-    this.datos = await cargarDatosGlobales();
+    el.innerHTML = '<p class="sf-loading">Cargando…</p>';
+    this.datos = await cargarDatos();
     if (!this.datos) {
-      el.innerHTML = '<p class="filtros-loading">No se pudo conectar.</p>';
+      el.innerHTML = '<p class="sf-loading sf-error">No se pudo conectar.</p>';
       return;
     }
-    this.render();
+    this._render();
   }
 
-  // ── filtrado en cascada ──────────────────────────────────────────────────
+  // ── helpers de datos ─────────────────────────────────────────────────────
 
-  _productos() {
+  _base() {
     return this.datos.productos.filter(p => !this.novedades || p.esNovedad);
   }
 
-  _tipos() {
-    const map = {};
-    this._productos().forEach(p => {
-      if (p.tipo) map[p.tipo.id_tipo] = p.tipo.nombre_tipo;
-    });
-    return Object.entries(map)
-      .map(([id, nombre]) => ({ id: +id, nombre }))
-      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-  }
-
-  _materiales() {
-    const prods = this.tipoSel
-      ? this._productos().filter(p => p.tipo?.id_tipo === this.tipoSel)
-      : this._productos();
-    const ids = new Set(
-      this.datos.variantes
-        .filter(v => prods.some(p => p.id_producto === v.id_producto))
-        .map(v => v.id_material)
-    );
-    return this.datos.materiales.filter(m => ids.has(m.id_material));
-  }
-
-  _tamanios() {
-    const prods = this.tipoSel
-      ? this._productos().filter(p => p.tipo?.id_tipo === this.tipoSel)
-      : this._productos();
-    const ids = new Set(
-      this.datos.variantes
-        .filter(v =>
-          prods.some(p => p.id_producto === v.id_producto) &&
-          (!this.matSel || v.id_material === this.matSel)
-        )
-        .map(v => v.id_tamanio)
-    );
-    return this.datos.tamanios.filter(t => ids.has(t.id_tamanio));
-  }
-
-  _productosFiltrados() {
-    return this._productos().filter(p => {
-      if (this.tipoSel && p.tipo?.id_tipo !== this.tipoSel) return false;
-      if (this.matSel || this.tamSel) {
+  _filtrar(f) {
+    const fs = f || this.f;
+    return this._base().filter(p => {
+      if (fs.cats.size && !(this.datos.catPorProd[p.id_producto] || []).some(c => fs.cats.has(c))) return false;
+      if (fs.tipos.size && !fs.tipos.has(p.tipo?.id_tipo)) return false;
+      if (fs.mats.size || fs.tams.size) {
         return this.datos.variantes.some(v =>
           v.id_producto === p.id_producto &&
-          (!this.matSel || v.id_material === this.matSel) &&
-          (!this.tamSel || v.id_tamanio === this.tamSel)
+          (!fs.mats.size || fs.mats.has(v.id_material)) &&
+          (!fs.tams.size  || fs.tams.has(v.id_tamanio))
         );
       }
       return true;
     });
   }
 
-  // ── render ───────────────────────────────────────────────────────────────
+  _count(grupo, id) {
+    const f = clonar(this.f);
+    f[grupo].has(id) ? f[grupo].delete(id) : f[grupo].add(id);
+    return this._filtrar(f).length;
+  }
 
-  render() {
-    const el = document.getElementById(this.id);
+  _listaCats() {
+    const usados = new Set(this._base().flatMap(p => this.datos.catPorProd[p.id_producto] || []));
+    return this.datos.categorias
+      .filter(c => usados.has(c.id_categoria))
+      .sort((a, b) => a.nombre_categoria.localeCompare(b.nombre_categoria, 'es'));
+  }
+
+  _listaTipos() {
+    const map = {};
+    this._base().forEach(p => { if (p.tipo) map[p.tipo.id_tipo] = p.tipo.nombre_tipo; });
+    return Object.entries(map)
+      .map(([id, nombre]) => ({ id: +id, nombre }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  }
+
+  // Usa tipo_material para los materiales disponibles del tipo seleccionado
+  _listaMats() {
+    if (!this.f.tipos.size) return [];
+    const matIds = new Set(
+      this.datos.tipoMaterial
+        .filter(tm => this.f.tipos.has(tm.id_tipo))
+        .map(tm => tm.id_material)
+    );
+    return this.datos.materiales.filter(m => matIds.has(m.id_material));
+  }
+
+  // Usa tipo_tamanio para los tamaños disponibles del tipo seleccionado
+  _listaTams() {
+    if (!this.f.tipos.size) return [];
+    const tamIds = new Set(
+      this.datos.tipoTamanio
+        .filter(tt => this.f.tipos.has(tt.id_tipo))
+        .map(tt => tt.id_tamanio)
+    );
+    return this.datos.tamanios.filter(t => tamIds.has(t.id_tamanio));
+  }
+
+  // ── HTML helpers ─────────────────────────────────────────────────────────
+
+  _htmlGrupo(titulo, grupo, items, labelFn, idFn, placeholder) {
+    const filas = items.length
+      ? items.map(item => {
+          const id  = idFn(item);
+          const lbl = esc(labelFn(item));
+          const act = this.f[grupo].has(id);
+          const cnt = this._count(grupo, id);
+          return `<label class="sf-check${act ? ' sf-check--act' : ''}">
+            <input type="checkbox" data-g="${grupo}" data-id="${id}"${act ? ' checked' : ''}>
+            <span class="sf-check-lbl">${lbl}</span>
+            <span class="sf-check-cnt">(${cnt})</span>
+          </label>`;
+        }).join('')
+      : `<span class="sf-placeholder">${placeholder || ''}</span>`;
+    return `<div class="sf-grupo">
+      <p class="sf-grupo-ttl">${titulo}</p>
+      ${filas}
+    </div>`;
+  }
+
+  _htmlSidebar() {
+    const activos = this.f.cats.size + this.f.tipos.size + this.f.mats.size + this.f.tams.size;
+    const tipoSel = this.f.tipos.size > 0;
+    return `<aside class="sf-sidebar">
+      <div class="sf-sidebar-head">
+        <span class="sf-sidebar-ttl">Filtrar por</span>
+        <div class="sf-sidebar-acciones">
+          ${activos ? `<button class="sf-btn-limpiar" data-act="limpiar">Limpiar (${activos})</button>` : ''}
+          <button class="sf-cerrar" data-act="cerrar" aria-label="Cerrar filtros">✕</button>
+        </div>
+      </div>
+      ${this._htmlGrupo('Categoría', 'cats',  this._listaCats(),  c => c.nombre_categoria, c => c.id_categoria)}
+      ${this._htmlGrupo('Tipo',      'tipos', this._listaTipos(), t => t.nombre,           t => t.id)}
+      ${this._htmlGrupo('Material',  'mats',  tipoSel ? this._listaMats() : [], m => m.nombre_material, m => m.id_material, 'Seleccioná un tipo primero')}
+      ${this._htmlGrupo('Tamaño',    'tams',  tipoSel ? this._listaTams() : [], t => t.unidad ? `${t.valor} ${t.unidad}` : t.valor, t => t.id_tamanio, 'Seleccioná un tipo primero')}
+    </aside>`;
+  }
+
+  _htmlGrid() {
+    const prods  = this._filtrar();
+    const titulo = this.novedades ? 'Novedades' : 'Productos';
+    const desc   = this.novedades
+      ? 'Los últimos diseños del catálogo.'
+      : 'Tocá un diseño para elegir material, tamaño y cantidad.';
+
+    if (!prods.length) {
+      return `<div class="card">
+        <div class="card-name">${titulo}</div>
+        <p class="card-desc">No hay productos con esa combinación.</p>
+        <button class="sf-btn-limpiar" data-act="limpiar" style="margin-top:.75rem">Limpiar filtros</button>
+      </div>`;
+    }
+    return `<div class="card">
+      <div class="card-name">${titulo}</div>
+      <p class="card-desc">${desc}</p>
+      <div class="stickers-grid">
+        ${prods.map((p, i) => {
+          const img  = this.datos.imgMap[p.id_producto];
+          const imgH = img
+            ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
+            : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+          return `<button class="sticker-btn" style="animation-delay:${i * 40}ms"
+                  onclick="abrirProducto(${p.id_producto})">
+            ${imgH}
+            <span class="sticker-name">${esc(p.nombre)}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  _btnFiltrar() {
+    const activos = this.f.cats.size + this.f.tipos.size + this.f.mats.size + this.f.tams.size;
+    return `<button class="sf-mobile-btn" data-act="drawer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="3" y1="6"  x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      Filtrar${activos ? ` <span class="sf-badge">${activos}</span>` : ''}
+    </button>`;
+  }
+
+  // ── render ────────────────────────────────────────────────────────────────
+
+  _render() {
+    const el = document.getElementById(this.cid);
     if (!el) return;
 
-    const tipos     = this._tipos();
-    const mats      = this._materiales();
-    const tams      = this._tamanios();
-    const productos = this._productosFiltrados();
-
-    const chip = (label, dataRow, dataId, activo) =>
-      `<button class="filtro-chip${activo ? ' filtro-chip--activo' : ''}" data-row="${dataRow}" data-id="${dataId}">${esc(label)}</button>`;
-
-    // fila tipos
-    const filaTipos = `
-      <div class="filtros-fila" data-row="tipo">
-        ${chip('Todos', 'tipo', '', !this.tipoSel)}
-        ${tipos.map(t => chip(t.nombre, 'tipo', t.id, this.tipoSel === t.id)).join('')}
-      </div>`;
-
-    // fila materiales (solo si hay más de uno)
-    const filaMat = mats.length > 1 ? `
-      <div class="filtros-fila filtros-fila--sub" data-row="material">
-        <span class="filtros-sublabel">Material</span>
-        ${chip('Todos', 'material', '', !this.matSel)}
-        ${mats.map(m => chip(m.nombre_material, 'material', m.id_material, this.matSel === m.id_material)).join('')}
-      </div>` : '';
-
-    // fila tamaños (solo si hay más de uno)
-    const filaTam = tams.length > 1 ? `
-      <div class="filtros-fila filtros-fila--sub" data-row="tamanio">
-        <span class="filtros-sublabel">Tamaño</span>
-        ${chip('Todos', 'tamanio', '', !this.tamSel)}
-        ${tams.map(t => chip(t.unidad ? `${t.valor} ${t.unidad}` : t.valor, 'tamanio', t.id_tamanio, this.tamSel === t.id_tamanio)).join('')}
-      </div>` : '';
-
-    // grid de cards
-    const cards = productos.map(p => {
-      const img = this.datos.imagenes[p.id_producto];
-      const imgHtml = img
-        ? `<img src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
-        : `<div class="novedad-img-ph">🎨</div>`;
-      return `
-        <button class="novedad-card" onclick="abrirProducto(${p.id_producto})">
-          <div class="novedad-img-wrap">${imgHtml}</div>
-          <div class="novedad-info">
-            <span class="novedad-nombre">${esc(p.nombre)}</span>
-            <span class="novedad-tipo">${esc(p.tipo?.nombre_tipo || '')}</span>
-          </div>
-        </button>`;
-    }).join('');
-
-    const empty = productos.length === 0
-      ? `<p class="filtros-empty">No hay productos con esa combinación.</p>`
-      : '';
+    if (this.onFiltrar) {
+      // Modo externo: solo sidebar, el grid lo maneja catalogo.js
+      el.innerHTML = `
+        ${this._btnFiltrar()}
+        <div class="sf-drawer-wrap${this._open ? ' sf-open' : ''}">
+          <div class="sf-overlay" data-act="cerrar"></div>
+          ${this._htmlSidebar()}
+        </div>`;
+      this._bind(el, el.querySelector('.sf-drawer-wrap'));
+      this.onFiltrar(this.f);
+      return;
+    }
 
     el.innerHTML = `
-      <div class="filtros-wrap">
-        ${filaTipos}${filaMat}${filaTam}
-      </div>
-      <div class="filtros-grid">${cards}${empty}</div>`;
+      ${this._btnFiltrar()}
+      <div class="sf-layout${this._open ? ' sf-open' : ''}">
+        <div class="sf-overlay" data-act="cerrar"></div>
+        ${this._htmlSidebar()}
+        <div class="sf-content">${this._htmlGrid()}</div>
+      </div>`;
+    this._bind(el, el.querySelector('.sf-layout'));
+  }
 
-    // eventos por delegación
-    el.querySelectorAll('.filtro-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const row = btn.dataset.row;
-        const val = btn.dataset.id ? +btn.dataset.id : null;
-        if (row === 'tipo')     { this.tipoSel = val; this.matSel = null; this.tamSel = null; }
-        if (row === 'material') { this.matSel  = val; this.tamSel = null; }
-        if (row === 'tamanio')  { this.tamSel  = val; }
-        this.render();
+  _bind(root, wrap) {
+    root.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const g  = cb.dataset.g;
+        const id = +cb.dataset.id;
+        this.f[g].has(id) ? this.f[g].delete(id) : this.f[g].add(id);
+        // cascade: si se vacían todos los tipos, limpiar materiales y tamaños
+        if (g === 'tipos' && !this.f.tipos.size) { this.f.mats.clear(); this.f.tams.clear(); }
+        this._render();
       });
+    });
+
+    root.querySelectorAll('[data-act="limpiar"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.f = { cats: new Set(), tipos: new Set(), mats: new Set(), tams: new Set() };
+        this._open = false;
+        this._render();
+      });
+    });
+
+    const drawer = root.querySelector('[data-act="drawer"]');
+    if (drawer) drawer.addEventListener('click', () => { this._open = true; this._render(); });
+
+    root.querySelectorAll('[data-act="cerrar"]').forEach(btn => {
+      btn.addEventListener('click', () => { this._open = false; this._render(); });
     });
   }
 }
 
-window.FiltrosGrid = FiltrosGrid;
+window.SidebarFiltros = SidebarFiltros;
+window.FiltrosGrid    = SidebarFiltros; // backward compat para index.html
+
 })();

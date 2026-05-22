@@ -74,7 +74,8 @@
       margin-bottom: 1rem;
     }
 
-    #productos button:not(.sticker-btn),
+    /* Aplica solo a botones dentro del .card del catálogo, no a las cards del filtro */
+    #productos .card button:not(.sticker-btn),
     .sel-confirm,
     .variante-btn,
     .counter-btn,
@@ -91,7 +92,7 @@
       transition: .2s;
     }
 
-    #productos button:not(.sticker-btn):hover,
+    #productos .card button:not(.sticker-btn):hover,
     .sel-confirm:hover,
     .variante-btn:hover,
     .counter-btn:hover,
@@ -313,7 +314,7 @@
 
     .sticker-thumb {
       width: 100%;
-      aspect-ratio: 1;
+      aspect-ratio: 4/3;
       object-fit: contain;
       display: block;
       padding: 6px;

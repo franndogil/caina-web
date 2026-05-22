@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/nav.css">
   <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/novedades.css">
+  <link rel="stylesheet" href="css/sidebar-filtros.css">
 </head>
 <body>
 
@@ -26,7 +27,7 @@
   </div>
 
   <div id="novedades-contenido">
-    <!-- Skeleton mientras carga -->
+    <!-- Skeleton mientras carga SidebarFiltros -->
     <div class="skeleton-grid">
       <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
       <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
@@ -37,7 +38,7 @@
     </div>
   </div>
 
-  <div class="novedades-cta" id="novedades-cta" style="display:none">
+  <div class="novedades-cta">
     <a href="/pedido.html">Ver todo el catálogo →</a>
   </div>
 </main>
@@ -79,82 +80,11 @@
 <script src="/js/nav.js"></script>
 <script src="/js/carrito.js"></script>
 <script src="/js/catalogo.js"></script>
+<script src="/js/filtros.js"></script>
 <script>
-(async function () {
-  // Esperar a que nav.js inicialice supabaseClient
-  await new Promise(function (resolve) {
-    if (window.supabaseClient) return resolve();
-    var t = setInterval(function () {
-      if (window.supabaseClient) { clearInterval(t); resolve(); }
-    }, 30);
-    setTimeout(function () { clearInterval(t); resolve(); }, 4000);
+  document.addEventListener('DOMContentLoaded', function () {
+    new SidebarFiltros('novedades-contenido', { novedades: true }).init();
   });
-
-  var db   = window.supabaseClient;
-  var cont = document.getElementById('novedades-contenido');
-  var cta  = document.getElementById('novedades-cta');
-
-  if (!db) {
-    cont.innerHTML = '<div class="novedades-empty"><div class="empty-icon">⚠️</div><p>No se pudo cargar el catálogo. Intentá de nuevo más tarde.</p></div>';
-    return;
-  }
-
-  var results = await Promise.all([
-    db.from('producto').select('*, tipo(nombre_tipo)').eq('esNovedad', true).order('id_producto', { ascending: false }),
-    db.from('imagen_producto').select('*').order('orden'),
-  ]);
-
-  var productos = results[0].data || [];
-  var imagenes  = results[1].data || [];
-
-  // Mapa id_producto → primera URL pública
-  var imgMap = {};
-  imagenes.forEach(function (img) {
-    if (imgMap[img.id_producto]) return; // solo la primera (orden ASC)
-    var pub = db.storage.from('productos').getPublicUrl(img.path_imagen);
-    imgMap[img.id_producto] = pub.data.publicUrl;
-  });
-
-  if (!productos.length) {
-    cont.innerHTML = [
-      '<div class="novedades-empty">',
-      '  <div class="empty-icon">✨</div>',
-      '  <p>Pronto vas a encontrar acá los productos más nuevos. ¡Seguinos para enterarte primero!</p>',
-      '  <a href="/pedido.html">Ver todo el catálogo</a>',
-      '</div>'
-    ].join('');
-    return;
-  }
-
-  function esc(s) {
-    return String(s || '').replace(/[&<>"']/g, function (c) {
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-
-  var cards = productos.map(function (p) {
-    var img = imgMap[p.id_producto];
-    var imgHtml = img
-      ? '<img src="' + esc(img) + '" alt="' + esc(p.nombre) + '" loading="lazy">'
-      : '<div class="novedad-img-ph">🎨</div>';
-
-    return [
-      '<button class="novedad-card" onclick="abrirProducto(' + p.id_producto + ')">',
-      '  <div class="novedad-img-wrap">',
-      '    ' + imgHtml,
-      '    <span class="novedad-badge">Nuevo</span>',
-      '  </div>',
-      '  <div class="novedad-info">',
-      '    <span class="novedad-nombre">' + esc(p.nombre) + '</span>',
-      '    <span class="novedad-tipo">' + esc(p.tipo ? p.tipo.nombre_tipo : '') + '</span>',
-      '  </div>',
-      '</button>'
-    ].join('');
-  }).join('');
-
-  cont.innerHTML = '<div class="novedades-grid">' + cards + '</div>';
-  cta.style.display = 'block';
-})();
 </script>
 </body>
 </html>

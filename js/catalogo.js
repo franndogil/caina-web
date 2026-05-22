@@ -163,6 +163,14 @@ const SORTS = [
 
 let filtroActivo = null; // { type: "tipo"|"categoria", value: Number, nombre: String }
 
+// ── Estado del sidebar de filtros (pedido.html) ──────────────────────────
+let filtrosSidebar = { cats: new Set(), tipos: new Set(), mats: new Set(), tams: new Set() };
+
+window.actualizarFiltrosSidebar = function (f) {
+  filtrosSidebar = f;
+  if (productos.length) renderProductos();
+};
+
 function aplicarFiltroDesdeURL() {
   const params = new URLSearchParams(window.location.search);
   const tipoId = params.get("tipo")      ? parseInt(params.get("tipo"))      : null;
@@ -184,16 +192,40 @@ function aplicarFiltroDesdeURL() {
 }
 
 function productosBase() {
-  if (!filtroActivo) return [...productos];
-  if (filtroActivo.type === "tipo") {
-    return productos.filter(p => p.tipo?.id_tipo === filtroActivo.value);
+  let base = [...productos];
+
+  // Filtro desde URL (tipo o categoría)
+  if (filtroActivo) {
+    if (filtroActivo.type === "tipo") {
+      base = base.filter(p => p.tipo?.id_tipo === filtroActivo.value);
+    } else if (filtroActivo.type === "categoria") {
+      base = base.filter(p =>
+        (categoriasPorProducto[p.id_producto] || []).includes(filtroActivo.value)
+      );
+    }
   }
-  if (filtroActivo.type === "categoria") {
-    return productos.filter(p =>
-      (categoriasPorProducto[p.id_producto] || []).includes(filtroActivo.value)
+
+  // Filtros del sidebar (AND sobre lo anterior)
+  const fs = filtrosSidebar;
+  if (fs.cats.size) {
+    base = base.filter(p =>
+      (categoriasPorProducto[p.id_producto] || []).some(c => fs.cats.has(c))
     );
   }
-  return [...productos];
+  if (fs.tipos.size) {
+    base = base.filter(p => fs.tipos.has(p.tipo?.id_tipo));
+  }
+  if (fs.mats.size || fs.tams.size) {
+    base = base.filter(p =>
+      variantes.some(v =>
+        v.id_producto === p.id_producto &&
+        (!fs.mats.size || fs.mats.has(v.id_material)) &&
+        (!fs.tams.size  || fs.tams.has(v.id_tamanio))
+      )
+    );
+  }
+
+  return base;
 }
 
 function productosSorted() {
@@ -357,19 +389,6 @@ function renderProductos() {
     <div class="card">
       <div class="card-name">${tituloCard}</div>
       <p class="card-desc">${subCard}</p>
-      <div class="sort-row">
-        ${verTodos}
-        ${SORTS.filter(s => {
-          if (s.key === "tipo"      && filtroActivo?.type === "tipo")      return false;
-          if (s.key === "categoria" && filtroActivo?.type === "categoria") return false;
-          return true;
-        }).map(s => `
-          <button class="sort-chip ${sortBy === s.key ? "sort-chip--active" : ""}"
-                  onclick="setSortBy('${s.key}')">
-            ${s.label}
-          </button>
-        `).join("")}
-      </div>
       ${contenido}
     </div>
   `;

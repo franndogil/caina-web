@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/store.css">
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/sidebar-filtros.css">
   </head>
 
   <body>
@@ -25,9 +26,16 @@
         <p class="sec-sub">Seleccioná lo que quieras y te lo preparamos.</p>
       </div>
 
-      <!-- Populado dinámicamente por catalogo.js -->
-      <div id="productos" class="products-grid">
-        <p style="color: var(--muted); text-align: center; grid-column: 1 / -1; padding: 2rem 0;">Cargando productos…</p>
+      <div class="sf-catalogo-wrap">
+        <!-- Sidebar de filtros -->
+        <div id="sidebar-filtros">
+          <p class="sf-loading">Cargando…</p>
+        </div>
+
+        <!-- Catálogo populado por catalogo.js -->
+        <div id="productos">
+          <p style="color: var(--muted); text-align: center; padding: 2rem 0;">Cargando productos…</p>
+        </div>
       </div>
 
       <div class="resumen" id="resumen">
@@ -87,6 +95,14 @@
   <script src="/js/nav.js"></script>
   <script src="/js/catalogo.js"></script>
   <script src="/js/carrito.js"></script>
+  <script src="/js/filtros.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      new SidebarFiltros('sidebar-filtros', {
+        onFiltrar: function (f) { window.actualizarFiltrosSidebar(f); }
+      }).init();
+    });
+  </script>
 
 </body>
 </html>
