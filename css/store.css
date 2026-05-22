@@ -75,7 +75,13 @@
       margin-bottom: 1rem;
     }
 
-    button {
+    #productos button,
+    .sel-confirm,
+    .sort-chip,
+    .variante-btn,
+    .sticker-btn,
+    .counter-btn,
+    .chip {
       width: 100%;
       margin-top: .5rem;
       border: none;
@@ -88,7 +94,13 @@
       transition: .2s;
     }
 
-    button:hover {
+    #productos button:hover,
+    .sel-confirm:hover,
+    .sort-chip:hover,
+    .variante-btn:hover,
+    .sticker-btn:hover,
+    .counter-btn:hover,
+    .chip:hover {
       background: var(--lime);
       color: var(--black);
     }
