@@ -209,7 +209,8 @@ function productosSorted() {
 
 function renderProductos() {
   const cont = document.getElementById("productos");
-  if (!cont) return;
+  // solo renderizar en pedido.html (el contenedor es un <div>, no la <section> del index)
+  if (!cont || cont.tagName === 'SECTION') return;
 
   if (!productos.length) {
     cont.innerHTML = `<p class="sec-sub" style="grid-column:1/-1;text-align:center;">No hay productos disponibles</p>`;

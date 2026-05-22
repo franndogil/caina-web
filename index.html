@@ -49,8 +49,8 @@
     <h2 class="sec-title">Novedades</h2>
     <p class="sec-sub">Conocé nuestros últimos diseños y productos</p>
   </div>
-  <div id="novedades-grid" class="novedades-grid">
-    <p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem 0;">Cargando novedades…</p>
+  <div id="filtros-novedades">
+    <p class="filtros-loading">Cargando…</p>
   </div>
   <a href="/novedades.html" class="btn-producto">Ver todas</a>
 </section>
@@ -70,31 +70,10 @@
     <h2 class="sec-title">Nuestros productos</h2>
     <p class="sec-sub">Mandanos tu idea y la hacemos realidad. Todo hecho a medida.</p>
   </div>
-  <div class="products-grid">
-    <div class="card">
-      <span class="card-icon">🎨</span>
-      <div class="card-name">Stickers</div>
-      <p class="card-desc">Diseños personalizados para decorar notebooks, termos, botones y más. Los hacemos según tu gusto.</p>
-    </div>
-    <div class="card">
-      <span class="card-icon">✨</span>
-      <div class="card-name">Vinilo UV</div>
-      <p class="card-desc">Textura 3D, colores intensos y relieve brillante. Se adhiere a casi cualquier superficie.</p>
-    </div>
-    <div class="card">
-      <span class="card-icon">🩷</span>
-      <div class="card-name">Tattoos temporales</div>
-      <p class="card-desc">Ideales para eventos. 100% personalizados con tu diseño o cualquier idea que se te ocurra.</p>
-    </div>
-    <div class="card">
-      <span class="card-icon">📒</span>
-      <div class="card-name">Agendas</div>
-      <p class="card-desc">Tu agenda a tu medida: para estudio, trabajo, emprendimiento o uso diario. Vos elegís, nosotras la hacemos.</p>
-    </div>
+  <div id="filtros-productos">
+    <p class="filtros-loading">Cargando…</p>
   </div>
-  <a href="/pedido.html" class="btn-producto">
-    Ver más
-  </a>
+  <a href="/pedido.html" class="btn-producto">Ver más</a>
 </section>
 
 <!-- GALLERY -->
@@ -212,6 +191,12 @@
   <script src="/js/nav.js"></script>
   <script src="/js/carrito.js"></script>
   <script src="/js/catalogo.js"></script>
-  <script src="/js/novedades-index.js"></script>
+  <script src="/js/filtros.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      new FiltrosGrid('filtros-novedades', { novedades: true }).init();
+      new FiltrosGrid('filtros-productos').init();
+    });
+  </script>
 </body>
 </html>
