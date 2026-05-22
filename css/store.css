@@ -260,8 +260,10 @@
     }
 
     .sort-chip {
-      width: auto;
-      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      width: auto !important;
+      margin: 0 !important;
       padding: .35rem .75rem;
       background: #1a1a1a;
       color: #ccc;
