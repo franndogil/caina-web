@@ -8,7 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/store.css">
   <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/novedades.css">
 </head>
 <body>
@@ -40,6 +42,33 @@
   </div>
 </main>
 
+<!-- MODAL IMAGEN (zoom) -->
+<div id="modal-img" class="modal-img">
+  <span class="cerrar" onclick="cerrarImagen()">×</span>
+  <img id="modal-contenido">
+</div>
+
+<!-- MODAL SELECTOR DE STICKER -->
+<div id="sticker-modal" class="sticker-modal" role="dialog" aria-modal="true">
+  <div class="sticker-modal-card">
+    <div class="sticker-modal-card-header">
+      <button class="sticker-modal-close" onclick="cerrarSticker()" aria-label="Cerrar">×</button>
+    </div>
+    <div id="sticker-modal-body" class="sticker-modal-body"></div>
+  </div>
+</div>
+
+<!-- BOTÓN FLOTANTE IR AL CARRITO -->
+<a href="/pedido.html#resumen" class="carrito-float" aria-label="Ver pedido" style="display:none;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <path d="M16 10a4 4 0 0 1-8 0"/>
+  </svg>
+  Ver pedido
+  <span class="carrito-float-badge" id="carrito-badge"></span>
+</a>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-left">
@@ -58,6 +87,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/config.js"></script>
 <script src="/js/nav.js"></script>
+<script src="/js/carrito.js"></script>
+<script src="/js/catalogo.js"></script>
 <script>
 (async function () {
   // Esperar a que nav.js inicialice supabaseClient
@@ -118,7 +149,7 @@
       : '<div class="novedad-img-ph">🎨</div>';
 
     return [
-      '<a href="/pedido.html?producto=' + p.id_producto + '" class="novedad-card">',
+      '<button class="novedad-card" onclick="abrirProducto(' + p.id_producto + ')" style="border:none;background:none;padding:0;cursor:pointer;">',
       '  <div class="novedad-img-wrap">',
       '    ' + imgHtml,
       '    <span class="novedad-badge">Nuevo</span>',
@@ -127,7 +158,7 @@
       '    <span class="novedad-nombre">' + esc(p.nombre) + '</span>',
       '    <span class="novedad-tipo">' + esc(p.tipo ? p.tipo.nombre_tipo : '') + '</span>',
       '  </div>',
-      '</a>'
+      '</button>'
     ].join('');
   }).join('');
 

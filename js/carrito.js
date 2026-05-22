@@ -91,10 +91,12 @@ function render() {
 
 function actualizarBadge() {
   const badge = document.getElementById("carrito-badge");
+  const btn = document.querySelector(".carrito-float");
   if (!badge) return;
   const total = totalCarritoUnidades();
   badge.textContent = total;
   badge.classList.toggle("visible", total > 0);
+  if (btn) btn.style.display = total > 0 ? "flex" : "none";
 }
 
 function irAlCarrito() {
@@ -138,10 +140,17 @@ function eliminar(index) {
 
 function animarAgregado() {
   const resumen = document.querySelector(".resumen");
-  if (!resumen) return;
-  resumen.style.transform  = "scale(1.02)";
-  resumen.style.transition = "0.2s";
-  setTimeout(() => (resumen.style.transform = "scale(1)"), 150);
+  if (resumen) {
+    resumen.style.transform  = "scale(1.02)";
+    resumen.style.transition = "0.2s";
+    setTimeout(() => (resumen.style.transform = "scale(1)"), 150);
+  }
+
+  const btn = document.querySelector(".carrito-float");
+  if (btn) {
+    btn.style.display = "flex";
+    btn.style.animation = "slideUp 0.4s ease-out";
+  }
 }
 
 // ========================

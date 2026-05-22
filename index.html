@@ -8,7 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/store.css">
   <link rel="stylesheet" href="css/nav.css">
+  <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/novedades.css">
 </head>
 <body>
 
@@ -18,37 +21,38 @@
 <!-- BOTÓN FLOTANTE WHATSAPP -->
 <a href="https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!" target="_blank" rel="noopener" class="wa-float"><img src="/assets/icons/whatsapp_white.png" alt=""></a>
 
-<!-- HERO -->
-<section class="hero" id="inicio">
-  <img src="assets/profile_pic.png" alt="CAINA logo" class="avatar">
-  <h1 class="hero-name">CAINA<br><em>Gráfica personalizada</em></h1>
-  <p class="hero-bio">
-  </p>
-  <div class="stats">
-    <div>
-      <div class="stat-val">100%</div>
-      <div class="stat-lbl">Personalizado</div>
+<!-- HERO VIDEO -->
+<section class="hero-video" id="inicio">
+  <video class="hero-video-element" autoplay muted loop playsinline>
+    <source src="about:blank" type="video/mp4">
+    <div class="hero-video-fallback">
+      <h1 class="hero-name">CAINA<br><em>Gráfica personalizada</em></h1>
     </div>
-    <div>
-      <div class="stat-val">Envíos</div>
-      <div class="stat-lbl">A todo el país</div>
-    </div>
-    <div>
-      <div class="stat-val">Entrega</div>
-      <div class="stat-lbl">Inmediata</div>
+  </video>
+  <div class="hero-video-overlay"></div>
+  <div class="hero-video-content">
+    <h1 class="hero-name">CAINA<br><em>Gráfica personalizada</em></h1>
+    <a href="pedido.html" class="btn-primary">
+      Armá tu pedido!
+    </a>
+    <div class="scroll-arrow">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      ver más
     </div>
   </div>
-  <a href="pedido.html" class="btn-primary">
-    Armá tu pedido!
-  </a>
+</section>
 
-  <a href="https://ig.me/m/caina.stickers" target="_blank" rel="noopener" class="btn-secondary">
-    Consultanos por Instagram
-  </a>
-  <div class="scroll-arrow">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-    ver más
+<!-- NOVEDADES -->
+<section class="novedades-index" id="novedades">
+  <div class="sec-header">
+    <p class="sec-label">Lo nuevo</p>
+    <h2 class="sec-title">Novedades</h2>
+    <p class="sec-sub">Conocé nuestros últimos diseños y productos</p>
   </div>
+  <div id="novedades-grid" class="novedades-grid">
+    <p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem 0;">Cargando novedades…</p>
+  </div>
+  <a href="/novedades.html" class="btn-producto">Ver todas</a>
 </section>
 
 <!-- PILLS -->
@@ -186,8 +190,38 @@
   </div>
 </footer>
 
+  <!-- MODAL IMAGEN (zoom) -->
+  <div id="modal-img" class="modal-img">
+    <span class="cerrar" onclick="cerrarImagen()">×</span>
+    <img id="modal-contenido">
+  </div>
+
+  <!-- MODAL SELECTOR DE STICKER -->
+  <div id="sticker-modal" class="sticker-modal" role="dialog" aria-modal="true">
+    <div class="sticker-modal-card">
+      <div class="sticker-modal-card-header">
+        <button class="sticker-modal-close" onclick="cerrarSticker()" aria-label="Cerrar">×</button>
+      </div>
+      <div id="sticker-modal-body" class="sticker-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- BOTÓN FLOTANTE IR AL CARRITO -->
+  <a href="/pedido.html#resumen" class="carrito-float" aria-label="Ver pedido" style="display:none;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    Ver pedido
+    <span class="carrito-float-badge" id="carrito-badge"></span>
+  </a>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/config.js"></script>
   <script src="/js/nav.js"></script>
+  <script src="/js/carrito.js"></script>
+  <script src="/js/catalogo.js"></script>
+  <script src="/js/novedades-index.js"></script>
 </body>
 </html>
