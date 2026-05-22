@@ -38,9 +38,8 @@
     }
 
     #productos {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      grid-column: 1 / -1;
+      display: block;
     }
 
     #productos .card {
@@ -77,9 +76,7 @@
 
     #productos button,
     .sel-confirm,
-    .sort-chip,
     .variante-btn,
-    .sticker-btn,
     .counter-btn,
     .chip {
       width: 100%;
@@ -96,13 +93,27 @@
 
     #productos button:hover,
     .sel-confirm:hover,
-    .sort-chip:hover,
     .variante-btn:hover,
-    .sticker-btn:hover,
     .counter-btn:hover,
     .chip:hover {
       background: var(--lime);
       color: var(--black);
+    }
+
+    .sticker-btn {
+      width: auto;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .sticker-btn:hover {
+      background: none;
+      color: inherit;
     }
 
     .resumen {
@@ -243,19 +254,21 @@
     .sort-row {
       display: flex;
       gap: 6px;
-      margin-bottom: .9rem;
+      margin-bottom: 1.2rem;
       flex-wrap: wrap;
+      margin-top: 1rem;
     }
 
     .sort-chip {
       width: auto;
       margin: 0;
-      padding: .5rem 1rem;
+      padding: .35rem .75rem;
       background: #1a1a1a;
       color: #ccc;
       border: 1px solid #2a2a2a;
       border-radius: 999px;
-      font-size: .85rem;
+      font-size: .75rem;
+      font-weight: 500;
       cursor: pointer;
       transition: all .15s ease;
     }
@@ -305,6 +318,59 @@
       transform: translateY(6px);
     }
 
+    /* ===== GRID DE STICKERS ===== */
+
+    .stickers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+
+    .sticker-btn {
+      display: flex;
+      flex-direction: column;
+      background: var(--gray-mid);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--white);
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+      cursor: pointer;
+    }
+
+    .sticker-btn:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201,243,58,.3);
+      box-shadow: 0 8px 28px rgba(201,243,58,.1);
+    }
+
+    .sticker-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      display: block;
+      padding: 8px;
+      box-sizing: border-box;
+      background: #111;
+    }
+
+    .sticker-thumb--ph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      opacity: .35;
+    }
+
+    .sticker-name {
+      padding: .6rem .8rem;
+      font-size: .85rem;
+      font-weight: 500;
+      line-height: 1.3;
+      color: #fff;
+    }
 
     /* ===== ITEMS DEL CARRITO (nuevo layout) ===== */
 
@@ -406,12 +472,13 @@
       right: 1.75rem;
       z-index: 200;
       width: auto;
-      display: flex;
+      display: none;
       align-items: center;
       gap: .6rem;
       background: var(--lime);
       color: var(--black);
       border: none;
+      text-decoration: none;
       font-weight: 700;
       font-size: .875rem;
       padding: .75rem 1.25rem .75rem 1rem;
@@ -419,6 +486,9 @@
       box-shadow: 0 4px 24px rgba(204,255,51,.35);
       cursor: pointer;
       transition: transform .25s, box-shadow .25s, opacity .3s, visibility .3s;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .carrito-float.oculto {

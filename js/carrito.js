@@ -45,45 +45,45 @@ function agregar(nombre, material, tamano, tamanioId, unidades, categoria, mater
 function render() {
   const lista    = document.getElementById("lista");
   const totalDiv = document.getElementById("total");
-  if (!lista) return;
 
-  if (!carrito.length) {
-    lista.innerHTML    = "No hay productos todavía";
-    totalDiv.innerHTML = "";
-    return;
-  }
+  if (lista && totalDiv) {
+    if (!carrito.length) {
+      lista.innerHTML    = "No hay productos todavía";
+      totalDiv.innerHTML = "";
+    } else {
+      const totalU = totalCarritoUnidades();
+      let totalPrecio = 0;
 
-  const totalU = totalCarritoUnidades();
-  let totalPrecio = 0;
+      lista.innerHTML = carrito.map((item, index) => {
+        const pu  = item.precioUnitario;
+        const sub = pu != null ? Math.round(pu * item.cantidad) : null;
+        if (sub != null) totalPrecio += sub;
 
-  lista.innerHTML = carrito.map((item, index) => {
-    const pu  = item.precioUnitario;
-    const sub = pu != null ? Math.round(pu * item.cantidad) : null;
-    if (sub != null) totalPrecio += sub;
+        return `
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-nombre">${item.nombre} <span class="item-qty">x${item.cantidad}</span></span>
+              <span class="item-detail">${item.material} · ${item.tamano}</span>
+              ${pu != null ? `<span class="item-precio-u">$${format(Math.round(pu))}/u</span>` : ""}
+            </div>
 
-    return `
-      <div class="item-row">
-        <div class="item-info">
-          <span class="item-nombre">${item.nombre} <span class="item-qty">x${item.cantidad}</span></span>
-          <span class="item-detail">${item.material} · ${item.tamano}</span>
-          ${pu != null ? `<span class="item-precio-u">$${format(Math.round(pu))}/u</span>` : ""}
-        </div>
-
-        <div class="item-derecha">
-          <div class="item-actions">
-            <button onclick="restar(${index})">−</button>
-            <button onclick="sumar(${index})">+</button>
-            <button onclick="eliminar(${index})" class="btn-eliminar">✕</button>
+            <div class="item-derecha">
+              <div class="item-actions">
+                <button onclick="restar(${index})">−</button>
+                <button onclick="sumar(${index})">+</button>
+                <button onclick="eliminar(${index})" class="btn-eliminar">✕</button>
+              </div>
+              ${sub != null ? `<span class="item-subtotal">$${format(sub)}</span>` : ""}
+            </div>
           </div>
-          ${sub != null ? `<span class="item-subtotal">$${format(sub)}</span>` : ""}
-        </div>
-      </div>
-    `;
-  }).join("");
+        `;
+      }).join("");
 
-  totalDiv.innerHTML = `
-    <div class="total-line">${totalU} unidades · Total: $${format(Math.round(totalPrecio))}</div>
-  `;
+      totalDiv.innerHTML = `
+        <div class="total-line">${totalU} unidades · Total: $${format(Math.round(totalPrecio))}</div>
+      `;
+    }
+  }
 
   if (window.renderModalIfOpen) window.renderModalIfOpen();
   actualizarBadge();
@@ -96,7 +96,19 @@ function actualizarBadge() {
   const total = totalCarritoUnidades();
   badge.textContent = total;
   badge.classList.toggle("visible", total > 0);
-  if (btn) btn.style.display = total > 0 ? "flex" : "none";
+  if (btn) {
+    if (total > 0) {
+      btn.style.display = "flex";
+      btn.style.opacity = "1";
+      btn.style.visibility = "visible";
+      btn.style.pointerEvents = "auto";
+    } else {
+      btn.style.display = "none";
+      btn.style.opacity = "0";
+      btn.style.visibility = "hidden";
+      btn.style.pointerEvents = "none";
+    }
+  }
 }
 
 function irAlCarrito() {
