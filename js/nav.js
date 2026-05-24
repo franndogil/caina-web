@@ -125,6 +125,17 @@
     if (!root) return;
     root.innerHTML = buildHTML();
 
+    // Botón flotante de WhatsApp (si no existe ya en el HTML)
+    if (!document.querySelector(".wa-float")) {
+      var wa = document.createElement("a");
+      wa.href = "https://wa.me/5491138454766?text=Hola%20CAINA%2C%20quiero%20hacer%20un%20pedido!";
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wa.className = "wa-float";
+      wa.innerHTML = '<img src="/assets/icons/whatsapp_white_button.png" alt="WhatsApp">';
+      document.body.appendChild(wa);
+    }
+
     var burger = document.getElementById("nav-burger");
     var mobile = document.getElementById("nav-mobile");
     if (burger && mobile) {
