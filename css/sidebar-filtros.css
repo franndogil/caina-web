@@ -7,6 +7,7 @@
   color: var(--muted);
   font-size: .9rem;
   padding: 1.5rem 0;
+  text-align: center;
 }
 .sf-error { color: #f66; }
 
@@ -309,5 +310,5 @@
 }
 
 @media (max-width: 480px) {
-  .stickers-grid { grid-template-columns: repeat(2, 1fr); gap: .65rem; }
+  .stickers-grid { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
 }

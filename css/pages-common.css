@@ -3,6 +3,7 @@
 
 body {
   padding-top: 62px;
+  background: var(--gray);
 }
 
 .page-section {

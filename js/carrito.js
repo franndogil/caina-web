@@ -172,16 +172,16 @@ function enviarPedido() {
   if (!carrito.length) return;
 
   let totalPrecio = 0;
-  let mensaje = "Hola CAINA!\n\nQuiero pedir:\n";
+  let mensaje = "Hola *CAINA*!\n\nQuiero pedir:\n";
 
   carrito.forEach(item => {
     const pu  = item.precioUnitario;
     const sub = pu != null ? Math.round(pu * item.cantidad) : 0;
     totalPrecio += sub;
-    mensaje += `- [${item.categoria}] ${item.nombre}: ${item.material}, ${item.tamano} x${item.cantidad}u ($${format(sub)})\n`;
+    mensaje += `* *[${item.categoria} ${item.material}]* ${item.nombre}: ${item.tamano} x${item.cantidad}u ($${format(sub)})\n`;
   });
 
-  mensaje += `\nTotal estimado: $${format(Math.round(totalPrecio))}`;
+  mensaje += `\n*Total estimado: $${format(Math.round(totalPrecio))}*`;
   mensaje += "\n\n¿Me confirman precio y tiempos?";
 
   window.open(`https://wa.me/5491138454766?text=${encodeURIComponent(mensaje)}`);

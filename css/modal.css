@@ -37,14 +37,6 @@
   font-size: 1.1rem;
 }
 
-/* ===== GRID DE STICKERS ===== */
-
-.stickers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 12px;
-  margin-top: 1rem;
-}
 
 .sticker-btn {
   display: flex;
@@ -275,6 +267,14 @@
   font-family: 'Babydoll';
   letter-spacing: .05em;
   margin: 0;
+}
+
+.sel-desc {
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.5;
+  text-align: center;
+  margin: 0 0 1.2rem;
 }
 
 .sel-group {

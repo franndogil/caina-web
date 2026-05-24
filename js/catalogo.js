@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
 
 // =========================
 // SUPABASE
@@ -264,7 +264,7 @@ function renderProductos() {
 
   let contenido;
 
-  if (sortBy === "tipo") {
+  if (filtrosSidebar.tipos.size > 1 || sortBy === "tipo") {
     const grupos = sorted.reduce((acc, p) => {
       const nombre = p.tipo?.nombre_tipo ?? "Sin tipo";
       (acc[nombre] = acc[nombre] || []).push(p);
@@ -400,9 +400,10 @@ function productoGrid(items, offset = 0) {
       ${items.map((p, i) => {
         const imgs  = imagenesPorProducto[p.id_producto] || [];
         const thumb = imgs[0]?.publicUrl;
-        const imgHtml = thumb
+        const imgInner = thumb
           ? `<img class="sticker-thumb" src="${escapar(thumb)}" alt="${escapar(p.nombre)}" loading="lazy">`
           : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+        const imgHtml = `<div class="sticker-img-wrap">${imgInner}</div>`;
         return `
           <button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
                   onclick="abrirProducto(${p.id_producto})">
@@ -463,7 +464,7 @@ function renderModal() {
   const body = document.getElementById("sticker-modal-body");
   if (!body || !sel.producto) return;
 
-  const { id_producto, nombre, tipo } = sel.producto;
+  const { id_producto, nombre, tipo, descripcion } = sel.producto;
   const id_tipo = tipo?.id_tipo ?? null;
   const imgs  = imagenesPorProducto[id_producto] || [];
   const mats  = getMaterialesDeProducto(id_producto, id_tipo);
@@ -502,7 +503,8 @@ function renderModal() {
   body.innerHTML = `
     ${galleryHtml}
 
-    <h3 class="sel-title" style="text-align:center;margin-bottom:1.2rem;">${escapar(nombre)}</h3>
+    <h3 class="sel-title" style="text-align:center;margin-bottom:${descripcion ? ".6rem" : "1.2rem"};">${escapar(nombre)}</h3>
+    ${descripcion ? `<p class="sel-desc">${escapar(descripcion)}</p>` : ""}
 
     <div class="sel-group">
       <p class="sel-label">Material</p>

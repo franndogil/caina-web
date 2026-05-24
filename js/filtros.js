@@ -90,7 +90,16 @@ class SidebarFiltros {
       el.innerHTML = '<p class="sf-loading sf-error">No se pudo conectar.</p>';
       return;
     }
+    this._leerURL();
     this._render();
+  }
+
+  _leerURL() {
+    const params = new URLSearchParams(window.location.search);
+    const tipoId = params.get('tipo')      ? parseInt(params.get('tipo'))      : null;
+    const catId  = params.get('categoria') ? parseInt(params.get('categoria')) : null;
+    if (tipoId !== null && !isNaN(tipoId)) this.f.tipos.add(tipoId);
+    if (catId  !== null && !isNaN(catId))  this.f.cats.add(catId);
   }
 
   // ── helpers de datos ─────────────────────────────────────────────────────
@@ -117,7 +126,7 @@ class SidebarFiltros {
 
   _count(grupo, id) {
     const f = clonar(this.f);
-    f[grupo].has(id) ? f[grupo].delete(id) : f[grupo].add(id);
+    f[grupo] = new Set([id]);
     return this._filtrar(f).length;
   }
 
@@ -212,10 +221,35 @@ class SidebarFiltros {
         <button class="sf-btn-limpiar" data-act="limpiar" style="margin-top:.75rem">Limpiar filtros</button>
       </div>`;
     }
-    return `<div class="card">
-      <div class="card-name">${titulo}</div>
-      <p class="card-desc">${desc}</p>
-      <div class="stickers-grid">
+
+    let gridContent;
+    if (this.f.tipos.size > 1) {
+      const grupos = {};
+      prods.forEach(p => {
+        const nombre = p.tipo?.nombre_tipo ?? 'Sin tipo';
+        (grupos[nombre] = grupos[nombre] || []).push(p);
+      });
+      let offset = 0;
+      gridContent = Object.entries(grupos).map(([nombre, items]) => {
+        const filas = items.map((p, i) => {
+          const img  = this.datos.imgMap[p.id_producto];
+          const imgH = img
+            ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
+            : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+          return `<button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
+                  onclick="abrirProducto(${p.id_producto})">
+            ${imgH}
+            <span class="sticker-name">${esc(p.nombre)}</span>
+          </button>`;
+        }).join('');
+        offset += items.length;
+        return `<div class="categoria-grupo">
+          <h4 class="categoria-titulo">${esc(nombre)}</h4>
+          <div class="stickers-grid">${filas}</div>
+        </div>`;
+      }).join('');
+    } else {
+      gridContent = `<div class="stickers-grid">
         ${prods.map((p, i) => {
           const img  = this.datos.imgMap[p.id_producto];
           const imgH = img
@@ -227,7 +261,13 @@ class SidebarFiltros {
             <span class="sticker-name">${esc(p.nombre)}</span>
           </button>`;
         }).join('')}
-      </div>
+      </div>`;
+    }
+
+    return `<div class="card">
+      <div class="card-name">${titulo}</div>
+      <p class="card-desc">${desc}</p>
+      ${gridContent}
     </div>`;
   }
 
