@@ -60,7 +60,7 @@
       Instagram
     </a>
     <a href="https://wa.me/5491138454766" target="_blank" rel="noopener" class="nav-wa">
-      <img src="/assets/icons/whatsapp_white.png" alt="" width="15" height="15">
+      <img src="/assets/icons/whatsapp_white_button.png" alt="" width="18" height="18">
       WhatsApp
     </a>
     <button class="nav-burger" id="nav-burger" type="button" aria-label="Abrir menú" aria-expanded="false">
