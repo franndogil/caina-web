@@ -11,9 +11,16 @@
 }
 .sf-error { color: #f66; }
 
-/* ── Botón mobile "Filtrar" ────────────────────────────────────── */
-.sf-mobile-btn {
+/* ── Fila mobile: botón "Filtrar" + "Limpiar" ─────────────────── */
+.sf-mobile-row {
   display: none;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.2rem;
+}
+
+.sf-mobile-btn {
+  display: inline-flex;
   align-items: center;
   gap: .5rem;
   padding: .55rem 1.1rem;
@@ -26,9 +33,22 @@
   font-family: inherit;
   cursor: pointer;
   transition: border-color .15s, color .15s;
-  margin-bottom: 1.2rem;
 }
 .sf-mobile-btn:hover { border-color: var(--lime); color: #fff; }
+
+.sf-mobile-limpiar {
+  background: none;
+  border: none;
+  color: var(--lime);
+  font-size: .82rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  opacity: .8;
+  transition: opacity .15s;
+}
+.sf-mobile-limpiar:hover { opacity: 1; }
 
 .sf-badge {
   display: inline-flex;
@@ -266,7 +286,7 @@
    RESPONSIVE — mobile drawer
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .sf-mobile-btn { display: inline-flex; }
+  .sf-mobile-row { display: flex; }
   .sf-cerrar     { display: block; }
 
   /* Sidebar como drawer fijo desde la izquierda */

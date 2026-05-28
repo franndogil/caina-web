@@ -273,14 +273,17 @@ class SidebarFiltros {
 
   _btnFiltrar() {
     const activos = this.f.cats.size + this.f.tipos.size + this.f.mats.size + this.f.tams.size;
-    return `<button class="sf-mobile-btn" data-act="drawer">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-        <line x1="3" y1="6"  x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-      Filtrar${activos ? ` <span class="sf-badge">${activos}</span>` : ''}
-    </button>`;
+    return `<div class="sf-mobile-row">
+      <button class="sf-mobile-btn" data-act="drawer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        Filtrar${activos ? ` <span class="sf-badge">${activos}</span>` : ''}
+      </button>
+      ${activos ? `<button class="sf-mobile-limpiar" data-act="limpiar">Limpiar</button>` : ''}
+    </div>`;
   }
 
   // ── render ────────────────────────────────────────────────────────────────

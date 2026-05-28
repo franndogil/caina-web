@@ -168,6 +168,8 @@ let filtrosSidebar = { cats: new Set(), tipos: new Set(), mats: new Set(), tams:
 
 window.actualizarFiltrosSidebar = function (f) {
   filtrosSidebar = f;
+  if (filtroActivo?.type === 'tipo'      && !f.tipos.has(filtroActivo.value)) filtroActivo = null;
+  if (filtroActivo?.type === 'categoria' && !f.cats.has(filtroActivo.value))  filtroActivo = null;
   if (productos.length) renderProductos();
 };
 

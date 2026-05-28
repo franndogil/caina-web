@@ -26,6 +26,13 @@
       font-size: 16px;
     }
 
+    a,
+    button,
+    label,
+    [role="button"] {
+      touch-action: manipulation;
+    }
+
 /* ===== BOTÓN FLOTANTE CARRITO ===== */
 
 .carrito-float {
