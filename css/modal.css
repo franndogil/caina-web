@@ -387,6 +387,35 @@
   font-style: italic;
 }
 
+.sel-sin-variantes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 1.2rem 0 .4rem;
+  text-align: center;
+}
+
+.sel-sin-variantes-msg {
+  font-size: .95rem;
+  color: #ccc;
+  margin: 0;
+}
+
+.sel-sin-variantes-sub {
+  font-size: .82rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.sel-confirm--wa {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  background: #25d366;
+  color: #000;
+}
+
 /* ===== CONTADOR DE CANTIDAD EN MODAL ===== */
 
 .sel-counter {

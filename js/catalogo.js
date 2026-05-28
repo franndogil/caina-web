@@ -18,13 +18,14 @@ if (!window.supabaseClient) {
 const supabase = window.supabaseClient;
 
 let productos              = [];
-let variantes              = [];
+let variantes              = []; // todas las variantes, cargadas con paginación
 let materiales             = [];
 let tamanios               = [];
 let precios                = [];
 let todasCategorias        = [];
 let imagenesPorProducto    = {};
-let categoriasPorProducto  = {}; // { id_producto: [id_categoria, ...] }
+let categoriasPorProducto  = {};
+const variantesCache       = {}; // { id_producto: [...variantes] }
 
 let sel = {
   producto:   null,
@@ -36,14 +37,16 @@ let sel = {
 
 let sortBy = "nombre";
 
+const PAGE_SIZE  = 20;
+let visibleCount = PAGE_SIZE;
+
 // =========================
 // DATA
 // =========================
 
 async function cargarTodo() {
-  const [prods, vars, mats, tams, pres, imgs, cats, catRels] = await Promise.all([
+  const [prods, mats, tams, pres, imgs, cats, catRels] = await Promise.all([
     supabase.from("producto").select("*, tipo(id_tipo, nombre_tipo)"),
-    supabase.from("variante").select("*"),
     supabase.from("material").select("*"),
     supabase.from("tamanio").select("*"),
     supabase.from("precio").select(`
@@ -52,13 +55,26 @@ async function cargarTodo() {
       precio_usa_material(id_material),
       precio_usa_tamanio(id_tamanio)
     `),
-    supabase.from("imagen_producto").select("*").order("orden"),
+    supabase.from("imagen_producto").select("*").order("orden").limit(5000),
     supabase.from("categoria").select("id_categoria, nombre_categoria"),
-    supabase.from("producto_pertenece_categoria").select("id_producto, id_categoria"),
+    supabase.from("producto_pertenece_categoria").select("id_producto, id_categoria").limit(5000),
   ]);
 
+  // Cargar variantes con paginación para superar el límite de 1000 filas de Supabase
+  variantes = [];
+  let varFrom = 0;
+  while (true) {
+    const { data: varPage } = await supabase
+      .from("variante")
+      .select("id_variante, id_producto, id_material, id_tamanio")
+      .range(varFrom, varFrom + 999);
+    if (!varPage || varPage.length === 0) break;
+    variantes = variantes.concat(varPage);
+    if (varPage.length < 1000) break;
+    varFrom += 1000;
+  }
+
   productos       = prods.data || [];
-  variantes       = vars.data  || [];
   materiales      = mats.data  || [];
   tamanios        = tams.data  || [];
   precios         = pres.data  || [];
@@ -94,55 +110,54 @@ async function cargarTodo() {
 // HELPERS DE VARIANTES
 // =========================
 
-// Solo tamaños que tienen precio definido para la combinación tipo+material+tamaño
-function getTamaniosDeProductoYMaterial(id_producto, id_material, id_tipo) {
+async function getVariantesProducto(id_producto) {
+  if (variantesCache[id_producto]) return variantesCache[id_producto];
+  const { data } = await supabase.from("variante").select("*").eq("id_producto", id_producto);
+  variantesCache[id_producto] = data || [];
+  return variantesCache[id_producto];
+}
+
+function getTamaniosDeProductoYMaterial(id_material, vars) {
   const ids = [...new Set(
-    variantes
-      .filter(v => v.id_producto === id_producto && v.id_material === id_material)
-      .map(v => v.id_tamanio)
+    vars.filter(v => v.id_material === id_material).map(v => v.id_tamanio)
   )];
   return tamanios
-    .filter(t => ids.includes(t.id_tamanio) && getPrecio(id_tipo ?? null, id_material, t.id_tamanio) !== null)
+    .filter(t => ids.includes(t.id_tamanio))
     .sort((a, b) => {
       if (a.unidad !== b.unidad) return a.unidad.localeCompare(b.unidad);
       return parseFloat(a.valor) - parseFloat(b.valor);
     });
 }
 
-// Solo materiales que tienen al menos un tamaño con precio
-function getMaterialesDeProducto(id_producto, id_tipo) {
-  const ids = [...new Set(
-    variantes.filter(v => v.id_producto === id_producto).map(v => v.id_material)
-  )];
-  return materiales.filter(m =>
-    ids.includes(m.id_material) &&
-    getTamaniosDeProductoYMaterial(id_producto, m.id_material, id_tipo).length > 0
-  );
+function getMaterialesDeProducto(vars) {
+  const ids = [...new Set(vars.map(v => v.id_material))];
+  return materiales.filter(m => ids.includes(m.id_material));
 }
 
 function getPrecio(id_tipo, id_material, id_tamanio) {
-  // Exact match: tipo + material + tamaño
-  let match = precios.find(p =>
-    p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
-    p.precio_usa_material?.some(m => m.id_material === id_material) &&
-    p.precio_usa_tipo?.some(tp => tp.id_tipo === id_tipo)
-  );
-  if (match) return match;
+  const tieneTipo     = p => p.precio_usa_tipo?.some(tp => tp.id_tipo === id_tipo);
+  const tieneMat      = p => p.precio_usa_material?.some(m => m.id_material === id_material);
+  const tieneTam      = p => p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio);
+  const sinTipo       = p => !p.precio_usa_tipo     || p.precio_usa_tipo.length     === 0;
+  const sinMat        = p => !p.precio_usa_material || p.precio_usa_material.length === 0;
+  const sinTam        = p => !p.precio_usa_tamanio  || p.precio_usa_tamanio.length  === 0;
 
-  // Material + tamaño, sin restricción de tipo (precio genérico para todos los tipos)
-  match = precios.find(p =>
-    p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
-    p.precio_usa_material?.some(m => m.id_material === id_material) &&
-    (!p.precio_usa_tipo || p.precio_usa_tipo.length === 0)
-  );
-  if (match) return match;
+  // Orden de especificidad descendente
+  const intentos = [
+    p => tieneTipo(p) && tieneMat(p) && tieneTam(p),   // tipo + material + tamaño
+    p => tieneTipo(p) && tieneMat(p) && sinTam(p),      // tipo + material
+    p => tieneTipo(p) && sinMat(p)   && tieneTam(p),    // tipo + tamaño
+    p => sinTipo(p)   && tieneMat(p) && tieneTam(p),    // material + tamaño
+    p => tieneTipo(p) && sinMat(p)   && sinTam(p),      // solo tipo
+    p => sinTipo(p)   && tieneMat(p) && sinTam(p),      // solo material
+    p => sinTipo(p)   && sinMat(p)   && tieneTam(p),    // solo tamaño
+  ];
 
-  // Solo tamaño, sin restricción de material ni tipo (precio verdaderamente genérico)
-  return precios.find(p =>
-    p.precio_usa_tamanio?.some(t => t.id_tamanio === id_tamanio) &&
-    (!p.precio_usa_material || p.precio_usa_material.length === 0) &&
-    (!p.precio_usa_tipo || p.precio_usa_tipo.length === 0)
-  ) ?? null;
+  for (const fn of intentos) {
+    const match = precios.find(fn);
+    if (match) return match;
+  }
+  return null;
 }
 
 // =========================
@@ -170,7 +185,7 @@ window.actualizarFiltrosSidebar = function (f) {
   filtrosSidebar = f;
   if (filtroActivo?.type === 'tipo'      && !f.tipos.has(filtroActivo.value)) filtroActivo = null;
   if (filtroActivo?.type === 'categoria' && !f.cats.has(filtroActivo.value))  filtroActivo = null;
-  if (productos.length) renderProductos();
+  if (productos.length) { visibleCount = PAGE_SIZE; renderProductos(); }
 };
 
 function aplicarFiltroDesdeURL() {
@@ -252,6 +267,8 @@ function renderProductos() {
   }
 
   const sorted = productosSorted();
+  const shown  = sorted.slice(0, visibleCount);
+  const hayMas = sorted.length > visibleCount;
 
   if (!sorted.length && filtroActivo) {
     cont.innerHTML = `
@@ -267,7 +284,7 @@ function renderProductos() {
   let contenido;
 
   if (filtrosSidebar.tipos.size > 1 || sortBy === "tipo") {
-    const grupos = sorted.reduce((acc, p) => {
+    const grupos = shown.reduce((acc, p) => {
       const nombre = p.tipo?.nombre_tipo ?? "Sin tipo";
       (acc[nombre] = acc[nombre] || []).push(p);
       return acc;
@@ -292,13 +309,13 @@ function renderProductos() {
 
     const grupos = [];
     catsOrdenadas.forEach(cat => {
-      const items = sorted.filter(p =>
+      const items = shown.filter(p =>
         (categoriasPorProducto[p.id_producto] || []).includes(cat.id_categoria)
       );
       if (items.length) grupos.push({ nombre: cat.nombre_categoria, items });
     });
 
-    const sinCat = sorted.filter(p => !(categoriasPorProducto[p.id_producto]?.length > 0));
+    const sinCat = shown.filter(p => !(categoriasPorProducto[p.id_producto]?.length > 0));
     if (sinCat.length) grupos.push({ nombre: "Sin categoría", items: sinCat });
 
     let offset = 0;
@@ -315,7 +332,7 @@ function renderProductos() {
 
   } else if (sortBy === "tamanio") {
     const tamGrupos = {};
-    sorted.forEach(p => {
+    shown.forEach(p => {
       const ids = [...new Set(
         variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_tamanio)
       )];
@@ -348,7 +365,7 @@ function renderProductos() {
 
   } else if (sortBy === "material") {
     const matGrupos = {};
-    sorted.forEach(p => {
+    shown.forEach(p => {
       const ids = [...new Set(
         variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_material)
       )];
@@ -376,7 +393,7 @@ function renderProductos() {
     }).join("");
 
   } else {
-    contenido = productoGrid(sorted);
+    contenido = productoGrid(shown);
   }
 
   const tituloCard = filtroActivo ? escapar(filtroActivo.nombre) : "Productos";
@@ -387,11 +404,18 @@ function renderProductos() {
     ? `<a href="/pedido.html" class="sort-chip" style="text-decoration:none;display:inline-flex">← Ver todos</a>`
     : "";
 
+  const masBtn = hayMas
+    ? `<div class="sf-mas-wrap">
+        <button class="sf-btn-mas" onclick="cargarMas()">Cargar más (${sorted.length - visibleCount} restantes)</button>
+      </div>`
+    : '';
+
   cont.innerHTML = `
     <div class="card">
       <div class="card-name">${tituloCard}</div>
       <p class="card-desc">${subCard}</p>
       ${contenido}
+      ${masBtn}
     </div>
   `;
 }
@@ -421,6 +445,7 @@ function productoGrid(items, offset = 0) {
 function setSortBy(key) {
   if (sortBy === key) return;
   sortBy = key;
+  visibleCount = PAGE_SIZE;
   const cont = document.getElementById("productos");
   if (!cont) { renderProductos(); return; }
   cont.classList.add("grid-saliendo");
@@ -440,21 +465,25 @@ function escapar(s) {
 // MODAL SELECTOR
 // =========================
 
-function abrirProducto(id_producto) {
+async function abrirProducto(id_producto) {
   const producto = productos.find(p => p.id_producto === id_producto);
   if (!producto) return;
 
-  const id_tipo = producto.tipo?.id_tipo ?? null;
-  const mats    = getMaterialesDeProducto(id_producto, id_tipo);
-  const matId   = mats[0]?.id_material ?? null;
-  const tams    = matId ? getTamaniosDeProductoYMaterial(id_producto, matId, id_tipo) : [];
-  const tamId   = tams[0]?.id_tamanio ?? null;
-
-  sel = { producto, materialId: matId, tamanioId: tamId, cantidad: 1, imgIndex: 0 };
-
-  renderModal();
+  // Mostrar modal con loading mientras se traen las variantes
+  sel = { producto, materialId: null, tamanioId: null, cantidad: 1, imgIndex: 0, vars: [] };
   document.getElementById("sticker-modal").style.display = "flex";
   document.body.style.overflow = "hidden";
+  const body = document.getElementById("sticker-modal-body");
+  if (body) body.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--muted)">Cargando…</p>';
+
+  const vars  = await getVariantesProducto(id_producto);
+  const mats  = getMaterialesDeProducto(vars);
+  const matId = mats[0]?.id_material ?? null;
+  const tams  = matId ? getTamaniosDeProductoYMaterial(matId, vars) : [];
+  const tamId = tams[0]?.id_tamanio ?? null;
+
+  sel = { producto, materialId: matId, tamanioId: tamId, cantidad: 1, imgIndex: 0, vars };
+  renderModal();
 }
 
 function cerrarSticker() {
@@ -467,10 +496,9 @@ function renderModal() {
   if (!body || !sel.producto) return;
 
   const { id_producto, nombre, tipo, descripcion } = sel.producto;
-  const id_tipo = tipo?.id_tipo ?? null;
   const imgs  = imagenesPorProducto[id_producto] || [];
-  const mats  = getMaterialesDeProducto(id_producto, id_tipo);
-  const tams  = sel.materialId ? getTamaniosDeProductoYMaterial(id_producto, sel.materialId, id_tipo) : [];
+  const mats  = getMaterialesDeProducto(sel.vars || []);
+  const tams  = sel.materialId ? getTamaniosDeProductoYMaterial(sel.materialId, sel.vars || []) : [];
 
   const precioObj  = (sel.materialId && sel.tamanioId)
     ? getPrecio(tipo?.id_tipo ?? null, sel.materialId, sel.tamanioId)
@@ -587,8 +615,7 @@ function goToImg(i) {
 
 function setMaterial(id) {
   sel.materialId = id;
-  const id_tipo = sel.producto.tipo?.id_tipo ?? null;
-  const tams    = getTamaniosDeProductoYMaterial(sel.producto.id_producto, id, id_tipo);
+  const tams = getTamaniosDeProductoYMaterial(id, sel.vars || []);
   if (!tams.find(t => t.id_tamanio === sel.tamanioId)) {
     sel.tamanioId = tams[0]?.id_tamanio ?? null;
   }
@@ -649,6 +676,7 @@ function cerrarImagen() {
 // EXPOSICIÓN GLOBAL
 // =========================
 
+window.cargarMas         = function () { visibleCount += PAGE_SIZE; renderProductos(); };
 window.setSortBy         = setSortBy;
 window.abrirProducto     = abrirProducto;
 window.cerrarSticker     = cerrarSticker;

@@ -329,6 +329,34 @@
 
 }
 
+/* ── Botón "Cargar más" ────────────────────────────────────────── */
+.sf-mas-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.sf-btn-mas {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .6rem 1.6rem;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 100px;
+  color: rgba(255,255,255,.8);
+  font-size: .85rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.sf-btn-mas:hover {
+  border-color: var(--lime);
+  color: #fff;
+  background: rgba(201,243,58,.06);
+}
+
 @media (max-width: 480px) {
   .stickers-grid { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
 }

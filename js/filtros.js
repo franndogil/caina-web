@@ -22,6 +22,22 @@ async function esperarSupabase() {
   });
 }
 
+async function fetchTodasVariantes(db) {
+  const rows = [];
+  let from = 0;
+  while (true) {
+    const { data } = await db
+      .from('variante')
+      .select('id_variante, id_producto, id_material, id_tamanio')
+      .range(from, from + 999);
+    if (!data || !data.length) break;
+    rows.push(...data);
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+  return rows;
+}
+
 async function cargarDatos() {
   if (_datos)   return _datos;
   if (_promesa) return _promesa;
@@ -32,7 +48,7 @@ async function cargarDatos() {
 
     const [prods, vars, mats, tams, imgs, cats, catRels, tipoMat, tipoTam] = await Promise.all([
       db.from('producto').select('*, tipo(id_tipo, nombre_tipo)'),
-      db.from('variante').select('id_variante, id_producto, id_material, id_tamanio'),
+      fetchTodasVariantes(db),
       db.from('material').select('id_material, nombre_material'),
       db.from('tamanio').select('id_tamanio, valor, unidad'),
       db.from('imagen_producto').select('id_producto, path_imagen, orden').order('orden'),
@@ -55,7 +71,7 @@ async function cargarDatos() {
 
     _datos = {
       productos:   prods.data   || [],
-      variantes:   vars.data    || [],
+      variantes:   vars          || [],
       materiales:  mats.data    || [],
       tamanios:    tams.data    || [],
       categorias:  cats.data    || [],
@@ -70,6 +86,8 @@ async function cargarDatos() {
   return _promesa;
 }
 
+const PAGE_SIZE = 20;
+
 // ─────────────────────────────────────────────────────────────────────────────
 class SidebarFiltros {
   constructor(cid, opts = {}) {
@@ -78,6 +96,7 @@ class SidebarFiltros {
     this.onFiltrar = opts.onFiltrar || null;   // modo externo (pedido.html)
     this.datos     = null;
     this._open     = false;
+    this._visible  = PAGE_SIZE;
     this.f = { cats: new Set(), tipos: new Set(), mats: new Set(), tams: new Set() };
   }
 
@@ -153,7 +172,9 @@ class SidebarFiltros {
         .filter(tm => this.f.tipos.has(tm.id_tipo))
         .map(tm => tm.id_material)
     );
-    return this.datos.materiales.filter(m => matIds.has(m.id_material));
+    return this.datos.materiales
+      .filter(m => matIds.has(m.id_material))
+      .sort((a, b) => a.nombre_material.localeCompare(b.nombre_material, 'es'));
   }
 
   // Usa tipo_tamanio para los tamaños disponibles del tipo seleccionado
@@ -164,7 +185,12 @@ class SidebarFiltros {
         .filter(tt => this.f.tipos.has(tt.id_tipo))
         .map(tt => tt.id_tamanio)
     );
-    return this.datos.tamanios.filter(t => tamIds.has(t.id_tamanio));
+    return this.datos.tamanios
+      .filter(t => tamIds.has(t.id_tamanio))
+      .sort((a, b) => {
+        if ((a.unidad || '') !== (b.unidad || '')) return (a.unidad || '').localeCompare(b.unidad || '');
+        return parseFloat(a.valor) - parseFloat(b.valor);
+      });
   }
 
   // ── HTML helpers ─────────────────────────────────────────────────────────
@@ -208,7 +234,7 @@ class SidebarFiltros {
   }
 
   _htmlGrid() {
-    const prods  = this._filtrar();
+    const prods  = this._filtrar().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
     const titulo = this.novedades ? 'Novedades' : 'Productos';
     const desc   = this.novedades
       ? 'Los últimos diseños del catálogo.'
@@ -222,10 +248,13 @@ class SidebarFiltros {
       </div>`;
     }
 
+    const shown  = prods.slice(0, this._visible);
+    const hayMas = prods.length > this._visible;
+
     let gridContent;
     if (this.f.tipos.size > 1) {
       const grupos = {};
-      prods.forEach(p => {
+      shown.forEach(p => {
         const nombre = p.tipo?.nombre_tipo ?? 'Sin tipo';
         (grupos[nombre] = grupos[nombre] || []).push(p);
       });
@@ -250,7 +279,7 @@ class SidebarFiltros {
       }).join('');
     } else {
       gridContent = `<div class="stickers-grid">
-        ${prods.map((p, i) => {
+        ${shown.map((p, i) => {
           const img  = this.datos.imgMap[p.id_producto];
           const imgH = img
             ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
@@ -264,10 +293,17 @@ class SidebarFiltros {
       </div>`;
     }
 
+    const masBtn = hayMas
+      ? `<div class="sf-mas-wrap">
+          <button class="sf-btn-mas" data-act="mas">Cargar más (${prods.length - this._visible} restantes)</button>
+        </div>`
+      : '';
+
     return `<div class="card">
       <div class="card-name">${titulo}</div>
       <p class="card-desc">${desc}</p>
       ${gridContent}
+      ${masBtn}
     </div>`;
   }
 
@@ -323,6 +359,7 @@ class SidebarFiltros {
         this.f[g].has(id) ? this.f[g].delete(id) : this.f[g].add(id);
         // cascade: si se vacían todos los tipos, limpiar materiales y tamaños
         if (g === 'tipos' && !this.f.tipos.size) { this.f.mats.clear(); this.f.tams.clear(); }
+        this._visible = PAGE_SIZE;
         this._render();
       });
     });
@@ -331,8 +368,13 @@ class SidebarFiltros {
       btn.addEventListener('click', () => {
         this.f = { cats: new Set(), tipos: new Set(), mats: new Set(), tams: new Set() };
         this._open = false;
+        this._visible = PAGE_SIZE;
         this._render();
       });
+    });
+
+    root.querySelectorAll('[data-act="mas"]').forEach(btn => {
+      btn.addEventListener('click', () => { this._visible += PAGE_SIZE; this._render(); });
     });
 
     const drawer = root.querySelector('[data-act="drawer"]');
