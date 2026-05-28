@@ -25,7 +25,7 @@ export async function initTypes() {
 }
 
 async function loadTypes() {
-    const { data: tipos, error } = await supabase.from('tipo').select('*').order('id_tipo');
+    const { data: tipos, error } = await supabase.from('tipo').select('*').order('nombre_tipo');
     if (error) { console.error('Error al cargar los tipos:', error); return; }
 
     typesList.innerHTML = '';

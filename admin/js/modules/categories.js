@@ -12,7 +12,7 @@ export async function initCategories() {
 }
 
 async function loadCategories() {
-    const { data: categories, error } = await supabase.from('categoria').select('*').order('id_categoria');
+    const { data: categories, error } = await supabase.from('categoria').select('*').order('nombre_categoria');
     if (error) { console.error('Error cargando categorías:', error); return; }
 
     categoriesList.innerHTML = '';

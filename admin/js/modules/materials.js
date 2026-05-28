@@ -12,7 +12,7 @@ export async function initMaterials() {
 }
 
 async function loadMaterials() {
-    const { data: materials, error } = await supabase.from('material').select('*').order('id_material');
+    const { data: materials, error } = await supabase.from('material').select('*').order('nombre_material');
     if (error) { console.error('Error cargando materiales:', error); return; }
 
     materialsList.innerHTML = '';

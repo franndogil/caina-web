@@ -36,7 +36,7 @@ async function loadProducts() {
     loadingMessage.textContent = 'Cargando productos...';
     loadingMessage.style.display = 'block';
 
-    const { data: products, error } = await supabase.from('producto').select(`id_producto, nombre, tipo (nombre_tipo)`);
+    const { data: products, error } = await supabase.from('producto').select(`id_producto, nombre, tipo (nombre_tipo)`).order('id_producto', { ascending: false });
     if (error) {
         loadingMessage.textContent = `Error: ${error.message}`;
         console.error('Error cargando productos:', error);
