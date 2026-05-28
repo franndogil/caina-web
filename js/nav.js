@@ -47,7 +47,6 @@
         <a href="/faq.html">Preguntas frecuentes</a>
         <a href="/como-comprar.html">Cómo comprar</a>
         <a href="/envio.html">Formas de envío</a>
-        <a href="/politicas-cambio.html">Políticas de cambio</a>
       </div>
     </li>
   </ul>
@@ -105,7 +104,6 @@
       <a href="/faq.html">Preguntas frecuentes</a>
       <a href="/como-comprar.html">Cómo comprar</a>
       <a href="/envio.html">Formas de envío</a>
-      <a href="/politicas-cambio.html">Políticas de cambio</a>
     </div>
   </div>
 
