@@ -31,10 +31,24 @@ async function loadMaterials() {
     });
 }
 
+function isDuplicateName(name, excludeId = null) {
+    const norm = s => s.trim().toLowerCase();
+    for (const li of materialsList.querySelectorAll('li[data-id]')) {
+        if (excludeId && li.dataset.id === String(excludeId)) continue;
+        if (norm(li.dataset.nombre) === norm(name)) return true;
+    }
+    return false;
+}
+
 async function handleCreate(e) {
     e.preventDefault();
     const nombre = newMaterialNameInput.value.trim();
     if (!nombre) return;
+
+    if (isDuplicateName(nombre)) {
+        showToast(`Ya existe un material llamado "${nombre}".`);
+        return;
+    }
 
     const { error } = await supabase.from('material').insert([{ nombre_material: nombre }]);
     if (error) { alert(`Error creando material: ${error.message}`); }
@@ -65,7 +79,13 @@ function handleListClick(event) {
     }
     if (target.classList.contains('save-btn')) {
         const newName = li.querySelector('.edit-input').value.trim();
-        if (newName) { updateMaterial(id, newName); }
+        if (newName) {
+            if (isDuplicateName(newName, id)) {
+                showToast(`Ya existe un material llamado "${newName}".`);
+            } else {
+                updateMaterial(id, newName);
+            }
+        }
     }
     if (target.classList.contains('cancel-btn')) { loadMaterials(); }
 }

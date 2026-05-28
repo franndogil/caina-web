@@ -824,6 +824,77 @@ body.login-page {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── Admin Layout (Sidebar + Main) ── */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 62px;
+}
+
+.admin-sidebar {
+  position: fixed;
+  top: 62px;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--gray);
+  border-right: 1px solid rgba(201,243,58,.08);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+  padding: 1.25rem 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201,243,58,.15) transparent;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  padding: 0 .75rem;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: .65rem 1rem;
+  border-radius: 8px;
+  color: rgba(255,255,255,.45);
+  text-decoration: none;
+  font-size: .875rem;
+  font-weight: 500;
+  transition: background .15s, color .15s;
+  user-select: none;
+}
+
+.sidebar-item:hover {
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.8);
+  opacity: 1;
+}
+
+.sidebar-item.active {
+  background: rgba(201,243,58,.1);
+  color: var(--lime);
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(201,243,58,.07);
+  margin: .6rem .5rem;
+}
+
+.admin-main {
+  margin-left: 220px;
+  flex: 1;
+  padding: 2.5rem 2.5rem 4rem;
+  min-width: 0;
+}
+
+/* ── Panel Sections ── */
+.admin-section { display: none; }
+.admin-section.active { display: block; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .admin-nav {
@@ -856,6 +927,50 @@ body.login-page {
   .section-header { flex-direction: column; align-items: flex-start; }
 
   .login-container { margin: 1rem; padding: 2rem 1.5rem; }
+
+  /* Sidebar → horizontal tab strip on mobile */
+  .admin-layout { padding-top: 56px; }
+
+  .admin-sidebar {
+    top: 56px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 44px;
+    bottom: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(201,243,58,.08);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0 .75rem;
+    height: 100%;
+    align-items: center;
+    white-space: nowrap;
+    gap: .2rem;
+  }
+
+  .sidebar-item {
+    padding: .4rem .85rem;
+    font-size: .8rem;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+
+  .sidebar-divider {
+    width: 1px;
+    height: 18px;
+    margin: 0 .3rem;
+  }
+
+  .admin-main {
+    margin-left: 0;
+    padding: 6.5rem 1rem 3rem;
+  }
 }
 
 @media (max-width: 480px) {

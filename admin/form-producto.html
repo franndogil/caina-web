@@ -29,6 +29,15 @@
 
         <form id="product-form">
 
+            <h2>Imágenes</h2>
+
+            <div id="images-section">
+                <div id="images-grid" class="images-grid"></div>
+                <input type="file" id="image-input" accept="image/*" multiple style="display:none;">
+            </div>
+
+            <hr>
+
             <div class="form-group">
                 <label for="product-name">Nombre del Producto</label>
                 <input type="text" id="product-name" placeholder="Ej: Sticker personalizado" required>
@@ -82,15 +91,6 @@
                         <small>El producto aparecerá destacado en la sección Novedades del sitio</small>
                     </span>
                 </label>
-            </div>
-
-            <hr>
-
-            <h2>Imágenes</h2>
-
-            <div id="images-section">
-                <div id="images-grid" class="images-grid"></div>
-                <input type="file" id="image-input" accept="image/*" multiple style="display:none;">
             </div>
 
             <hr>

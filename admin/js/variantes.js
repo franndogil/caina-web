@@ -12,22 +12,25 @@ async function loadAllVariants() {
         '<tr><td colspan="3">Cargando variantes...</td></tr>';
 
     try {
-        const { data: variants, error } = await supabase
-            .from('variante')
-            .select(`
-                id_variante,
-                stock,
-                producto:id_producto(nombre),
-                material:id_material(
-                    id_material,
-                    nombre_material
-                ),
-                tamanio:id_tamanio(
-                    id_tamanio,
+        const [{ data: variants, error }, { data: allPrices }] = await Promise.all([
+            supabase
+                .from('variante')
+                .select(`
+                    id_variante,
+                    stock,
+                    producto:id_producto(nombre),
+                    material:id_material(id_material, nombre_material),
+                    tamanio:id_tamanio(id_tamanio, valor, unidad)
+                `),
+            supabase
+                .from('precio')
+                .select(`
                     valor,
-                    unidad
-                )
-            `);
+                    precio_usa_material(id_material),
+                    precio_usa_tamanio(id_tamanio)
+                `)
+                .order('id_precio')
+        ]);
 
         if (error) throw error;
 
@@ -37,33 +40,19 @@ async function loadAllVariants() {
             return;
         }
 
-        const pricePromises = variants.map(async (variant) => {
-            const { data } = await supabase
-                .from('precio')
-                .select(`
-                    valor,
-                    precio_usa_material!inner(id_material),
-                    precio_usa_tamanio!inner(id_tamanio)
-                `)
-                .eq(
-                    'precio_usa_material.id_material',
-                    variant.material.id_material
-                )
-                .eq(
-                    'precio_usa_tamanio.id_tamanio',
-                    variant.tamanio.id_tamanio
-                )
-                .limit(1)
-                .single();
+        const priceMap = new Map();
+        for (const price of allPrices || []) {
+            const materialId = price.precio_usa_material?.[0]?.id_material;
+            const tamanioId = price.precio_usa_tamanio?.[0]?.id_tamanio;
+            const key = `${materialId}-${tamanioId}`;
+            if (materialId && tamanioId && !priceMap.has(key)) {
+                priceMap.set(key, price.valor);
+            }
+        }
 
-            return data?.valor || null;
-        });
-
-        const priceResults = await Promise.all(pricePromises);
-
-        allVariantsData = variants.map((variant, index) => ({
+        allVariantsData = variants.map(variant => ({
             ...variant,
-            calculated_price: priceResults[index]
+            calculated_price: priceMap.get(`${variant.material.id_material}-${variant.tamanio.id_tamanio}`) || null
         }));
 
         renderTable(allVariantsData);

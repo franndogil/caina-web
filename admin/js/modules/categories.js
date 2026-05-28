@@ -31,10 +31,24 @@ async function loadCategories() {
     });
 }
 
+function isDuplicateName(name, excludeId = null) {
+    const norm = s => s.trim().toLowerCase();
+    for (const li of categoriesList.querySelectorAll('li[data-id]')) {
+        if (excludeId && li.dataset.id === String(excludeId)) continue;
+        if (norm(li.dataset.nombre) === norm(name)) return true;
+    }
+    return false;
+}
+
 async function handleCreate(e) {
     e.preventDefault();
     const nombre = newCategoryNameInput.value.trim();
     if (!nombre) return;
+
+    if (isDuplicateName(nombre)) {
+        showToast(`Ya existe una categoría llamada "${nombre}".`);
+        return;
+    }
 
     const { error } = await supabase.from('categoria').insert([{ nombre_categoria: nombre }]);
     if (error) { alert(`Error creando categoría: ${error.message}`); }
@@ -64,7 +78,13 @@ function handleListClick(event) {
     }
     if (target.classList.contains('save-btn')) {
         const newName = li.querySelector('.edit-input').value.trim();
-        if (newName) { updateCategory(id, newName); }
+        if (newName) {
+            if (isDuplicateName(newName, id)) {
+                showToast(`Ya existe una categoría llamada "${newName}".`);
+            } else {
+                updateCategory(id, newName);
+            }
+        }
     }
     if (target.classList.contains('cancel-btn')) { loadCategories(); }
 }

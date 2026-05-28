@@ -45,11 +45,25 @@ async function loadSizes() {
     });
 }
 
+function isDuplicateSize(valor, unidad, excludeId = null) {
+    const norm = s => s.trim().toLowerCase();
+    for (const li of sizesList.querySelectorAll('li[data-id]')) {
+        if (excludeId && li.dataset.id === String(excludeId)) continue;
+        if (norm(li.dataset.valor) === norm(valor) && norm(li.dataset.unidad) === norm(unidad)) return true;
+    }
+    return false;
+}
+
 async function handleCreate(e) {
     e.preventDefault();
     const valor = newSizeValueInput.value.trim();
     const unidad = newSizeUnitInput.value.trim();
     if (!valor) { alert('El valor es obligatorio.'); return; }
+
+    if (isDuplicateSize(valor, unidad)) {
+        showToast(`Ya existe un tamaño "${sizeDisplay(valor, unidad)}".`);
+        return;
+    }
 
     const { error } = await supabase.from('tamanio').insert([{ valor, unidad }]);
     if (error) { alert(`Error creando tamaño: ${error.message}`); }
@@ -86,7 +100,13 @@ function handleListClick(event) {
     if (target.classList.contains('save-btn')) {
         const newValor = li.querySelector('.edit-valor').value.trim();
         const newUnidad = li.querySelector('.edit-unidad').value.trim();
-        if (newValor) { updateSize(id, newValor, newUnidad); }
+        if (newValor) {
+            if (isDuplicateSize(newValor, newUnidad, id)) {
+                showToast(`Ya existe un tamaño "${sizeDisplay(newValor, newUnidad)}".`);
+            } else {
+                updateSize(id, newValor, newUnidad);
+            }
+        }
     }
     if (target.classList.contains('cancel-btn')) { loadSizes(); }
 }

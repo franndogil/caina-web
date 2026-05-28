@@ -321,7 +321,7 @@ async function handleFormSubmit(e) {
 
     try {
         const productData = {
-            nombre: productNameInput.value,
+            nombre: productNameInput.value.trim(),
             descripcion: productDescriptionInput.value,
             id_tipo: productTypeSelect.value,
             esNovedad: productNovedadCheckbox.checked

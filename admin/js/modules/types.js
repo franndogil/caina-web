@@ -104,9 +104,24 @@ function closeModal() {
     activeTipoId = null;
 }
 
+function isDuplicateName(name, excludeId = null) {
+    const norm = s => s.trim().toLowerCase();
+    for (const li of typesList.querySelectorAll('li[data-id]')) {
+        if (excludeId && li.dataset.id === String(excludeId)) continue;
+        const liName = li.querySelector('.type-name')?.textContent || '';
+        if (norm(liName) === norm(name)) return true;
+    }
+    return false;
+}
+
 async function saveType() {
     const nombre = modalNameInput.value.trim();
     if (!nombre) { alert('El nombre del tipo es obligatorio.'); return; }
+
+    if (isDuplicateName(nombre, activeTipoId)) {
+        showToast(`Ya existe un tipo llamado "${nombre}".`);
+        return;
+    }
 
     modalSaveBtn.disabled = true;
     modalSaveBtn.textContent = 'Guardando...';

@@ -4,36 +4,55 @@ import { initMaterials } from './modules/materials.js';
 import { initSizes } from './modules/sizes.js';
 import { initProducts } from './modules/products.js';
 import { initPrices } from './modules/prices.js';
-import { initCategories } from './modules/categories.js'; // <-- NUEVA IMPORTACIÓN
+import { initCategories } from './modules/categories.js';
+
+const initialized = new Set();
+
+const moduleMap = {
+    catalogo:   initProducts,
+    tipos:      initTypes,
+    materiales: initMaterials,
+    tamanios:   initSizes,
+    categorias: initCategories,
+    precios:    initPrices,
+};
+
+async function showSection(name) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+
+    document.getElementById(`section-${name}`)?.classList.add('active');
+    document.querySelector(`.sidebar-item[data-section="${name}"]`)?.classList.add('active');
+
+    if (!initialized.has(name) && moduleMap[name]) {
+        initialized.add(name);
+        try {
+            await moduleMap[name]();
+        } catch (err) {
+            console.error(`Error al inicializar sección "${name}":`, err);
+        }
+    }
+}
 
 (async () => {
-    // 1. Proteger la página
     const session = await getUserSession();
     if (!session) {
         window.location.href = 'login.html';
         return;
     }
 
-    // 2. Mostrar el contenido del panel (ahora que sabemos que el usuario está autenticado)
     document.getElementById('auth-check').style.display = 'none';
     document.getElementById('admin-nav').style.display = '';
-    document.getElementById('admin-wrapper').style.display = '';
+    document.getElementById('admin-layout').style.display = '';
 
-    // 3. Inicializar todos los módulos en paralelo
-    try {
-        await Promise.all([
-            initProducts(),
-            initTypes(),
-            initMaterials(),
-            initSizes(),
-            initPrices(),
-            initCategories()
-        ]);
-        console.log("Panel de Administración inicializado con éxito.");
-    } catch (error) {
-        console.error("Error durante la inicialización de un módulo:", error);
-    }
+    await showSection('catalogo');
+
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await showSection(item.dataset.section);
+        });
+    });
 })();
 
-// Asignar el evento al botón de logout
 document.getElementById('logout-button').addEventListener('click', () => logout());

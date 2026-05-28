@@ -194,6 +194,19 @@ async function loadPrices() {
 
 // --- Lógica de Eventos y CRUD ---
 
+function isDuplicateCombination(tipoId, materialId, tamanioId, excludeId = null) {
+    const norm = v => v || null;
+    for (const li of pricesList.querySelectorAll('li[data-id]')) {
+        if (excludeId && li.dataset.id === String(excludeId)) continue;
+        if (
+            norm(li.dataset.tipoId)     === norm(tipoId) &&
+            norm(li.dataset.materialId) === norm(materialId) &&
+            norm(li.dataset.tamanioId)  === norm(tamanioId)
+        ) return true;
+    }
+    return false;
+}
+
 async function handleCreate(e) {
     e.preventDefault();
     const valor = newPriceValueInput.value;
@@ -201,8 +214,18 @@ async function handleCreate(e) {
     const materialId = priceMaterialSelect.value || null;
     const tamanioId = priceTamanioSelect.value || null;
 
-    if (!valor || (!tipoId && !materialId && !tamanioId)) {
-        alert('Error: El precio debe tener un valor y estar asociado al menos a un atributo.');
+    if (!valor || parseFloat(valor) <= 0) {
+        alert('El precio debe ser mayor a cero.');
+        return;
+    }
+
+    if (!tipoId && !materialId && !tamanioId) {
+        alert('El precio debe estar asociado al menos a un atributo.');
+        return;
+    }
+
+    if (isDuplicateCombination(tipoId, materialId, tamanioId)) {
+        showToast('Ya existe una regla de precio para esa combinación de atributos.');
         return;
     }
 
@@ -284,11 +307,21 @@ async function updatePrice(id, li) {
     const materialId = li.querySelector('.edit-material').value || null;
     const tamanioId = li.querySelector('.edit-tamanio').value || null;
 
-    if (!valor || (!tipoId && !materialId && !tamanioId)) {
-        alert('El precio debe tener un valor y al menos un atributo asociado.');
+    if (!valor || parseFloat(valor) <= 0) {
+        alert('El precio debe ser mayor a cero.');
         return;
     }
-    
+
+    if (!tipoId && !materialId && !tamanioId) {
+        alert('El precio debe estar asociado al menos a un atributo.');
+        return;
+    }
+
+    if (isDuplicateCombination(tipoId, materialId, tamanioId, id)) {
+        showToast('Ya existe una regla de precio para esa combinación de atributos.');
+        return;
+    }
+
     // Usamos una transacción para asegurar la consistencia de los datos
     const { error } = await supabase.rpc('update_price_with_relations', {
         p_price_id: id,
