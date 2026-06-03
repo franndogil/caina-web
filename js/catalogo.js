@@ -676,7 +676,49 @@ function cerrarImagen() {
 // EXPOSICIÓN GLOBAL
 // =========================
 
-window.cargarMas         = function () { visibleCount += PAGE_SIZE; renderProductos(); };
+window.cargarMas = function () {
+  const cont = document.getElementById("productos");
+  if (!cont) return;
+
+  // Vista agrupada o sort alternativo: re-render completo
+  if (filtrosSidebar.tipos.size > 1 || sortBy !== "nombre") {
+    visibleCount += PAGE_SIZE;
+    renderProductos();
+    return;
+  }
+
+  const prevCount = visibleCount;
+  visibleCount += PAGE_SIZE;
+
+  const sorted = productosSorted();
+  const nuevos = sorted.slice(prevCount, visibleCount);
+  const hayMas = sorted.length > visibleCount;
+
+  const grid = cont.querySelector('.stickers-grid');
+  if (!grid) { renderProductos(); return; }
+
+  nuevos.forEach((p, i) => {
+    const imgs     = imagenesPorProducto[p.id_producto] || [];
+    const thumb    = imgs[0]?.publicUrl;
+    const imgInner = thumb
+      ? `<img class="sticker-thumb" src="${escapar(thumb)}" alt="${escapar(p.nombre)}" loading="lazy">`
+      : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+    const btn = document.createElement('button');
+    btn.className = 'sticker-btn sticker-btn--new';
+    btn.style.animationDelay = `${i * 20}ms`;
+    btn.setAttribute('onclick', `abrirProducto(${p.id_producto})`);
+    btn.innerHTML = `<div class="sticker-img-wrap">${imgInner}</div><span class="sticker-name">${escapar(p.nombre)}</span>`;
+    grid.appendChild(btn);
+  });
+
+  const btnWrap = cont.querySelector('.sf-mas-wrap');
+  if (!hayMas) {
+    btnWrap?.remove();
+  } else if (btnWrap) {
+    const btn = btnWrap.querySelector('.sf-btn-mas');
+    if (btn) btn.textContent = `Cargar más (${sorted.length - visibleCount} restantes)`;
+  }
+};
 window.setSortBy         = setSortBy;
 window.abrirProducto     = abrirProducto;
 window.cerrarSticker     = cerrarSticker;

@@ -4,3 +4,4 @@ node_modules/
 .env.local
 js/config.js
 admin/js/config.js
+.vscode/

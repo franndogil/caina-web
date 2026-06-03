@@ -322,6 +322,48 @@ class SidebarFiltros {
     </div>`;
   }
 
+  // ── append-only para "Cargar más" ─────────────────────────────────────────
+
+  _appendMas(root) {
+    // Vista agrupada (múltiples tipos): re-render completo
+    if (this.f.tipos.size > 1) {
+      this._visible += PAGE_SIZE;
+      this._render();
+      return;
+    }
+
+    const prevVisible = this._visible;
+    this._visible += PAGE_SIZE;
+
+    const prods  = this._filtrar().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    const nuevos = prods.slice(prevVisible, this._visible);
+    const hayMas = prods.length > this._visible;
+
+    const grid = root.querySelector('.stickers-grid');
+    if (!grid) { this._render(); return; }
+
+    nuevos.forEach((p, i) => {
+      const img  = this.datos.imgMap[p.id_producto];
+      const imgH = img
+        ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
+        : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+      const btn = document.createElement('button');
+      btn.className = 'sticker-btn sticker-btn--new';
+      btn.style.animationDelay = `${i * 20}ms`;
+      btn.setAttribute('onclick', `abrirProducto(${p.id_producto})`);
+      btn.innerHTML = `${imgH}<span class="sticker-name">${esc(p.nombre)}</span>`;
+      grid.appendChild(btn);
+    });
+
+    const btnWrap = root.querySelector('.sf-mas-wrap');
+    if (!hayMas) {
+      btnWrap?.remove();
+    } else if (btnWrap) {
+      const btn = btnWrap.querySelector('.sf-btn-mas');
+      if (btn) btn.textContent = `Cargar más (${prods.length - this._visible} restantes)`;
+    }
+  }
+
   // ── render ────────────────────────────────────────────────────────────────
 
   _render() {
@@ -374,7 +416,7 @@ class SidebarFiltros {
     });
 
     root.querySelectorAll('[data-act="mas"]').forEach(btn => {
-      btn.addEventListener('click', () => { this._visible += PAGE_SIZE; this._render(); });
+      btn.addEventListener('click', () => { this._appendMas(root); });
     });
 
     const drawer = root.querySelector('[data-act="drawer"]');

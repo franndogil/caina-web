@@ -353,6 +353,15 @@
       line-height: 1.3;
     }
 
+    .sticker-btn--new {
+      animation: stickerFadeIn .25s ease both;
+    }
+
+    @keyframes stickerFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     /* ===== ITEMS DEL CARRITO ===== */
 
     .item-row {
