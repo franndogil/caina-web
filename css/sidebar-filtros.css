@@ -274,6 +274,12 @@
 .sf-catalogo-wrap > #sidebar-filtros {
   width: 210px;
   flex-shrink: 0;
+  align-self: stretch;
+}
+
+/* Necesario para que position:sticky funcione dentro del contenedor alto */
+.sf-catalogo-wrap > #sidebar-filtros .sf-drawer-wrap {
+  height: 100%;
 }
 
 /* El catálogo ocupa el resto */
@@ -333,28 +339,27 @@
 .sf-mas-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .sf-btn-mas {
   display: inline-flex;
   align-items: center;
-  gap: .45rem;
-  padding: .6rem 1.6rem;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.15);
+  gap: .5rem;
+  padding: .7rem 2.2rem;
+  background: var(--lime);
+  color: var(--black);
+  border: none;
   border-radius: 100px;
-  color: rgba(255,255,255,.8);
-  font-size: .85rem;
-  font-weight: 500;
-  font-family: inherit;
+  font-family: 'Babydoll', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: .04em;
   cursor: pointer;
-  transition: border-color .15s, color .15s, background .15s;
+  transition: transform .2s, box-shadow .2s;
 }
 .sf-btn-mas:hover {
-  border-color: var(--lime);
-  color: #fff;
-  background: rgba(201,243,58,.06);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(201,243,58,.38);
 }
 
 @media (max-width: 480px) {

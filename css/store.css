@@ -75,7 +75,7 @@
     }
 
     /* Aplica solo a botones dentro del .card del catálogo, no a las cards del filtro */
-    #productos .card button:not(.sticker-btn),
+    #productos .card button:not(.sticker-btn):not(.sf-btn-mas),
     .sel-confirm,
     .variante-btn,
     .counter-btn,
@@ -92,7 +92,7 @@
       transition: .2s;
     }
 
-    #productos .card button:not(.sticker-btn):hover,
+    #productos .card button:not(.sticker-btn):not(.sf-btn-mas):hover,
     .sel-confirm:hover,
     .variante-btn:hover,
     .counter-btn:hover,
