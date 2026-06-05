@@ -11,23 +11,22 @@ Sitio web completo con vitrina pública dinámica, carrito de compras y panel de
 ### Inicio
 
 ![Inicio](assets/docs/inicio_desktop.png)
-![Inicio](assets/docs/inicio_mobile.png)
 
 ### Catálogo público
 
-![Catálogo](assets/docs/)
+![Catálogo](assets/docs/catalogo.png)
 
 ### Carrito de compras
 
-![Carrito](assets/docs/)
+![Carrito](assets/docs/carrito.png)
+
+### Log In
+
+![Log In](assets/docs/login.png)
 
 ### Panel administrativo
 
-![Panel administrativo](assets/docs/)
-
-### Gestión de variantes
-
-![Variantes](assets/docs/)
+![Panel administrativo](assets/docs/panel.png)
 
 ---
 
