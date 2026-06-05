@@ -6,6 +6,10 @@ Sitio web completo con vitrina pública dinámica, carrito de compras y panel de
 
 ---
 
+**Demo:** https://cainaweb.netlify.app/
+
+---
+
 ## Capturas
 
 ### Inicio
@@ -215,12 +219,12 @@ Configurado para deploy continuo en **Netlify**:
 
 ---
 
-## Equipo de desarrollo
+## Autor
 
-Desarrollado por **Franco Matias Dogil** como proyecto freelance para una imprenta gráfica de Berazategui, Buenos Aires.
+Desarrollado por Franco Matias Dogil para una gráfica personalizada de Berazategui, Buenos Aires.
 
 ---
 
-## Licencia
+## Estado del proyecto
 
-Proyecto de uso privado desarrollado para cliente. El código no está disponible para uso comercial sin autorización.
+Actualmente utilizado para la gestión de productos y consultas de una gráfica personalizada.
