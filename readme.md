@@ -1,8 +1,33 @@
-# CAINA — Catálogo Digital con Panel de Administración
+# CAINA — E-commerce y Sistema de Gestión para Gráfica Personalizada
 
-**E-commerce de productos personalizados (stickers, vinilos, tatuajes temporales) para una imprenta gráfica de Berazategui, Buenos Aires.**
+**E-commerce de productos personalizados para una imprenta gráfica de Berazategui, Buenos Aires.**
 
 Sitio web completo con vitrina pública dinámica, carrito de compras y panel de administración privado para gestión de inventario, variantes y precios. Stack 100% vanilla + Supabase — sin frameworks, sin proceso de build, desplegado en Netlify.
+
+---
+
+## Capturas
+
+### Inicio
+
+![Inicio](assets/docs/inicio_desktop.png)
+![Inicio](assets/docs/inicio_mobile.png)
+
+### Catálogo público
+
+![Catálogo](assets/docs/)
+
+### Carrito de compras
+
+![Carrito](assets/docs/)
+
+### Panel administrativo
+
+![Panel administrativo](assets/docs/)
+
+### Gestión de variantes
+
+![Variantes](assets/docs/)
 
 ---
 
