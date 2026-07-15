@@ -235,6 +235,6 @@ Actualmente utilizado para la gestión de productos y consultas de una gráfica 
 
 ---
 
-- ## Autor
+## Autor
 
 Desarrollado por Franco Matias Dogil para una gráfica personalizada de Berazategui, Buenos Aires.
