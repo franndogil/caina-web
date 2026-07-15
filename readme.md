@@ -219,12 +219,24 @@ Configurado para deploy continuo en **Netlify**:
 
 ---
 
-## Autor
+## Estado del proyecto
+
+En producción
+Actualmente utilizado para la gestión de productos y consultas de una gráfica personalizada.
+
+---
+
+## Próximas funcionalidades
+
+- Integración con Mercado Pago
+- Seguimiento de pedidos
+- Panel de clientes
+- Gestión de órdenes
+
+---
+
+- ## Autor
 
 Desarrollado por Franco Matias Dogil para una gráfica personalizada de Berazategui, Buenos Aires.
 
 ---
-
-## Estado del proyecto
-
-Actualmente utilizado para la gestión de productos y consultas de una gráfica personalizada.
