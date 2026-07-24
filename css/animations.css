@@ -1,0 +1,733 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CAINA · Sistema de animaciones
+   ----------------------------------------------------------------------
+   Todo cuelga de html.anim, clase que agrega un script inline en el <head>.
+   Si no hay JS (o si js/animations.js no carga), la clase nunca se aplica
+   o se remueve sola, y la página se ve exactamente como antes: nada queda
+   oculto.
+
+   El reveal usa las propiedades individuales `translate` / `scale` en vez
+   de `transform`, así los efectos de hover (que sí usan `transform`) se
+   componen sin pisarse.
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ease-soft: cubic-bezier(.22, 1, .36, 1);
+  --ease-back: cubic-bezier(.34, 1.45, .64, 1);
+  --reveal-dur: .8s;
+}
+
+/* ─── 1. MOTOR DE SCROLL REVEAL ──────────────────────────────────────── */
+/* Estado inicial de todo lo que aparece al scrollear.
+   js/animations.js les agrega .is-visible al cruzar el viewport.        */
+
+/* La lista va dentro de :where() para que aporte especificidad cero: así
+   .is-visible (más abajo) le gana siempre, sin importar cuántas clases
+   tenga un selector que se agregue acá en el futuro. El footer quedó
+   afuera a propósito: se revelaba mal y no aporta nada. */
+html.anim :where(
+  [data-reveal],
+  .sec-header,
+  .gallery-intro,
+  .page-header,
+  .novedades-header,
+  .pill,
+  .g-item,
+  .cta-final > *,
+  .btn-producto,
+  .about-block,
+  .value-card,
+  .info-card,
+  .contact-card,
+  .step,
+  .faq-item,
+  .policy-block,
+  .detail-row,
+  .divider-title,
+  .info-note,
+  .cta-note,
+  .cta-box,
+  .novedades-cta,
+  .categoria-grupo,
+  .resumen
+) {
+  opacity: 0;
+  translate: 0 30px;
+  /* Una sola lista de transiciones para reveal + hover: así ninguna regla
+     posterior necesita redeclarar `transition` y pisar el reveal. */
+  transition: opacity   var(--reveal-dur) var(--ease-soft),
+              translate var(--reveal-dur) var(--ease-soft),
+              scale     var(--reveal-dur) var(--ease-soft),
+              transform    .35s var(--ease-soft),
+              box-shadow   .35s ease,
+              border-color .25s ease,
+              background-color .25s ease,
+              color .25s ease;
+  transition-delay: var(--d, 0ms);
+}
+
+/* Variantes de dirección: data-reveal="left|right|zoom|fade" */
+html.anim [data-reveal="left"]  { translate: -38px 0; }
+html.anim [data-reveal="right"] { translate:  38px 0; }
+html.anim [data-reveal="fade"]  { translate: none; }
+html.anim [data-reveal="zoom"],
+html.anim .g-item               { translate: none; scale: .9; }
+
+/* Estado revelado. Va último a propósito: misma especificidad que las
+   reglas de arriba, gana por orden de aparición. */
+html.anim .is-visible {
+  opacity: 1;
+  translate: none;
+  scale: none;
+}
+
+/* ─── 2. CARGA DE PÁGINA + NAV ───────────────────────────────────────── */
+
+html.anim body {
+  animation: pageIn .45s ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* El nav lo inyecta js/nav.js, así que la animación corre al insertarse */
+html.anim nav#main-nav {
+  animation: navDown .55s var(--ease-soft) both;
+  transition: background .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+@keyframes navDown {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+html.anim nav#main-nav.nav-scrolled {
+  background: rgba(10, 10, 10, .99);
+  border-bottom-color: rgba(201, 243, 58, .22);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .55);
+}
+
+html.anim .nav-logo {
+  transition: transform .35s var(--ease-back), text-shadow .35s ease;
+}
+
+html.anim .nav-logo:hover {
+  transform: scale(1.06) rotate(-2deg);
+  text-shadow: 0 0 20px rgba(204, 255, 51, .55);
+}
+
+/* Subrayado deslizante en los links del nav */
+html.anim .nav-links > li::after {
+  content: '';
+  position: absolute;
+  left: .82rem;
+  right: .82rem;
+  bottom: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lime);
+  transform: scaleX(0);
+  transition: transform .3s var(--ease-soft);
+  pointer-events: none;
+}
+
+html.anim .nav-links > li:hover::after {
+  transform: scaleX(1);
+}
+
+/* Menú mobile: items en cascada */
+html.anim .nav-mobile.open > * {
+  animation: mobileItemIn .35s var(--ease-soft) backwards;
+}
+
+html.anim .nav-mobile.open > *:nth-child(1)   { animation-delay:  30ms; }
+html.anim .nav-mobile.open > *:nth-child(2)   { animation-delay:  70ms; }
+html.anim .nav-mobile.open > *:nth-child(3)   { animation-delay: 110ms; }
+html.anim .nav-mobile.open > *:nth-child(4)   { animation-delay: 150ms; }
+html.anim .nav-mobile.open > *:nth-child(5)   { animation-delay: 190ms; }
+html.anim .nav-mobile.open > *:nth-child(6)   { animation-delay: 230ms; }
+html.anim .nav-mobile.open > *:nth-child(n+7) { animation-delay: 270ms; }
+
+@keyframes mobileItemIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Hamburguesa → X */
+html.anim .nav-burger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+html.anim .nav-burger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(.2);
+}
+html.anim .nav-burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Barra de progreso de scroll (la crea js/animations.js) */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  z-index: 250;
+  pointer-events: none;
+}
+
+.scroll-progress > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(204, 255, 51, .35), var(--lime));
+  box-shadow: 0 0 14px rgba(204, 255, 51, .7);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* ─── 3. HERO (index) ────────────────────────────────────────────────── */
+
+html.anim .hero-bg-photo {
+  animation: kenBurns 26s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.12); }
+}
+
+html.anim .hero-video-overlay {
+  animation: pageIn 1.2s ease both;
+}
+
+html.anim .hero-logo-dog {
+  animation: heroIn .95s var(--ease-soft) .15s both,
+             floatY 5s ease-in-out 1.3s infinite;
+}
+
+html.anim .hero-video-content .hero-name {
+  animation: heroIn .95s var(--ease-soft) .32s both;
+}
+
+html.anim .hero-video-content .btn-primary {
+  animation: heroIn .95s var(--ease-soft) .5s both;
+}
+
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+/* La flecha ya tiene su propio bob (que anima transform);
+   acá sólo sumamos una segunda animación que toca opacity. */
+html.anim .scroll-arrow {
+  opacity: 0;
+  animation: bob 2.2s ease-in-out infinite,
+             fadeOnly .7s ease .95s forwards;
+}
+
+@keyframes fadeOnly {
+  to { opacity: 1; }
+}
+
+html.anim .scroll-arrow svg {
+  transition: transform .3s var(--ease-back);
+}
+
+html.anim .scroll-arrow:hover svg {
+  transform: translateY(4px) scale(1.2);
+}
+
+/* Latido del "Gráfica personalizada" en lima */
+html.anim .hero-name em {
+  animation: limeGlow 4s ease-in-out 1.6s infinite;
+}
+
+@keyframes limeGlow {
+  0%, 100% { text-shadow: 0 0 18px rgba(204, 255, 51, .22); }
+  50%      { text-shadow: 0 0 36px rgba(204, 255, 51, .58); }
+}
+
+/* ─── 4. TÍTULOS DE SECCIÓN ──────────────────────────────────────────── */
+/* Línea lima que se "dibuja" cuando el encabezado entra en pantalla */
+
+html.anim .sec-header .sec-title::after,
+html.anim .gallery-intro .sec-title::after,
+html.anim .cta-final .sec-title::after,
+html.anim .page-header h1::after,
+html.anim .novedades-header h1::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 3px;
+  margin: .75rem auto 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--lime), transparent);
+  transition: width .95s var(--ease-soft) .3s;
+}
+
+html.anim .cta-final .sec-title::after {
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .5), transparent);
+}
+
+html.anim .sec-header.is-visible .sec-title::after,
+html.anim .gallery-intro.is-visible .sec-title::after,
+html.anim .cta-final .sec-title.is-visible::after,
+html.anim .page-header.is-visible h1::after,
+html.anim .novedades-header.is-visible h1::after {
+  width: 92px;
+}
+
+/* ─── 5. TARJETAS Y BLOQUES ──────────────────────────────────────────── */
+
+html.anim .value-card,
+html.anim .info-card,
+html.anim .step,
+html.anim .contact-card,
+html.anim .policy-block,
+html.anim .detail-row,
+html.anim .about-block,
+html.anim .cta-box,
+html.anim .cta-note,
+html.anim .info-note {
+  position: relative;
+  overflow: hidden;
+}
+
+html.anim .value-card:hover,
+html.anim .info-card:hover,
+html.anim .step:hover,
+html.anim .contact-card:hover,
+html.anim .policy-block:hover,
+html.anim .detail-row:hover,
+html.anim .about-block:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .42);
+  border-color: rgba(204, 255, 51, .3);
+}
+
+/* Destello diagonal al pasar el mouse */
+html.anim .value-card::before,
+html.anim .info-card::before,
+html.anim .step::before,
+html.anim .contact-card::before,
+html.anim .policy-block::before,
+html.anim .about-block::before,
+html.anim .cta-box::before,
+html.anim .cta-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -70%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(204, 255, 51, .11), transparent);
+  transform: skewX(-16deg);
+  transition: left .8s var(--ease-soft);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html.anim .value-card:hover::before,
+html.anim .info-card:hover::before,
+html.anim .step:hover::before,
+html.anim .contact-card:hover::before,
+html.anim .policy-block:hover::before,
+html.anim .about-block:hover::before,
+html.anim .cta-box:hover::before,
+html.anim .cta-note:hover::before {
+  left: 125%;
+}
+
+/* Iconos que reaccionan */
+html.anim .v-icon,
+html.anim .info-card-icon,
+html.anim .contact-icon,
+html.anim .step-num,
+html.anim .p-icon {
+  transition: transform .4s var(--ease-back);
+}
+
+html.anim .value-card:hover .v-icon,
+html.anim .info-card:hover .info-card-icon,
+html.anim .contact-card:hover .contact-icon,
+html.anim .step:hover .step-num,
+html.anim .policy-block:hover .p-icon {
+  transform: scale(1.15) rotate(-7deg);
+}
+
+html.anim .contact-arrow {
+  transition: transform .35s var(--ease-back);
+}
+
+html.anim .contact-card:hover .contact-arrow {
+  transform: translateX(7px);
+}
+
+/* Cards del catálogo */
+html.anim .card {
+  transition: border-color .3s ease, transform .35s var(--ease-soft), box-shadow .35s ease;
+}
+
+html.anim .card:hover:not(:has(.sticker-btn:hover)) {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .4);
+}
+
+/* ─── 6. FAQ · acordeón con altura animada ───────────────────────────── */
+
+html.anim .faq-a {
+  display: block;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height .4s var(--ease-soft),
+              opacity .3s ease,
+              padding-bottom .4s var(--ease-soft);
+}
+
+html.anim .faq-item.open .faq-a {
+  max-height: 60rem;
+  padding-bottom: 1.1rem;
+  opacity: 1;
+}
+
+html.anim .faq-arrow {
+  transition: transform .35s var(--ease-back), background .25s ease;
+}
+
+html.anim .faq-q:hover .faq-arrow {
+  background: rgba(204, 255, 51, .25);
+}
+
+html.anim .faq-item.open .faq-arrow {
+  transform: rotate(180deg) scale(1.1);
+}
+
+/* ─── 7. BOTONES ─────────────────────────────────────────────────────── */
+
+html.anim .btn-primary,
+html.anim .btn-producto,
+html.anim .btn-dark,
+html.anim .btn-secondary {
+  position: relative;
+  overflow: hidden;
+  /* incluye las props del reveal porque .btn-producto también se revela */
+  transition: opacity   var(--reveal-dur) var(--ease-soft),
+              translate var(--reveal-dur) var(--ease-soft),
+              transform .28s var(--ease-back),
+              box-shadow .28s ease,
+              border-color .28s ease,
+              color .28s ease;
+  transition-delay: var(--d, 0ms);
+}
+
+html.anim .btn-producto:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(201, 243, 58, .38);
+}
+
+html.anim .btn-primary:active,
+html.anim .btn-producto:active,
+html.anim .btn-dark:active,
+html.anim .btn-secondary:active {
+  transform: translateY(-1px) scale(.97);
+}
+
+html.anim .btn-primary::after,
+html.anim .btn-producto::after,
+html.anim .btn-dark::after,
+html.anim .btn-secondary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -140%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .45), transparent);
+  transform: skewX(-18deg);
+  transition: left .65s var(--ease-soft);
+  pointer-events: none;
+}
+
+html.anim .btn-dark::after,
+html.anim .btn-secondary::after {
+  background: linear-gradient(100deg, transparent, rgba(204, 255, 51, .28), transparent);
+}
+
+html.anim .btn-primary:hover::after,
+html.anim .btn-producto:hover::after,
+html.anim .btn-dark:hover::after,
+html.anim .btn-secondary:hover::after {
+  left: 140%;
+}
+
+/* Chips y botones chicos */
+html.anim .filtro-chip,
+html.anim .sort-chip,
+html.anim .chip,
+html.anim .variante-btn,
+html.anim .sf-btn-mas,
+html.anim .btn-accion,
+html.anim .counter-btn {
+  transition: background .2s ease, border-color .2s ease, color .2s ease,
+              transform .2s var(--ease-back), box-shadow .2s ease;
+}
+
+html.anim .filtro-chip:hover,
+html.anim .sort-chip:hover,
+html.anim .sf-btn-mas:hover {
+  transform: translateY(-2px);
+}
+
+html.anim .filtro-chip:active,
+html.anim .sort-chip:active,
+html.anim .chip:active,
+html.anim .sf-btn-mas:active,
+html.anim .btn-accion:active {
+  transform: scale(.93);
+}
+
+html.anim .filtro-chip--activo,
+html.anim .sort-chip--active,
+html.anim .chip--active {
+  animation: chipPop .38s var(--ease-back);
+}
+
+@keyframes chipPop {
+  0%   { transform: scale(.85); }
+  60%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
+/* ─── 8. PILLS ───────────────────────────────────────────────────────── */
+
+html.anim .pill:hover {
+  transform: translateY(-4px);
+  background-color: rgba(201, 243, 58, .15);
+  border-color: rgba(201, 243, 58, .45);
+  box-shadow: 0 10px 24px rgba(201, 243, 58, .14);
+}
+
+/* ─── 9. GALERÍA ─────────────────────────────────────────────────────── */
+
+html.anim .g-item:hover {
+  transform: scale(1.03);
+  z-index: 2;
+}
+
+html.anim .g-overlay p {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform .38s var(--ease-soft) .06s, opacity .38s ease .06s;
+}
+
+html.anim .g-item:hover .g-overlay p {
+  transform: none;
+  opacity: 1;
+}
+
+html.anim .gallery-more a {
+  display: inline-block;
+  transition: transform .3s var(--ease-back), opacity .25s ease;
+}
+
+html.anim .gallery-more a:hover {
+  transform: translateX(6px);
+}
+
+/* ─── 10. GRILLAS DINÁMICAS (stickers / novedades) ───────────────────── */
+/* fill-mode "backwards" a propósito: al terminar, el elemento vuelve a sus
+   estilos normales y el :hover de la card sigue funcionando.            */
+
+html.anim .sticker-btn,
+html.anim .novedad-card {
+  animation: itemIn .55s var(--ease-soft) backwards;
+}
+
+@keyframes itemIn {
+  from { opacity: 0; transform: translateY(16px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+html.anim .sticker-thumb,
+html.anim .novedad-img-wrap img {
+  transition: transform .45s var(--ease-soft);
+}
+
+html.anim .sticker-btn:hover .sticker-thumb,
+html.anim .novedad-card:hover .novedad-img-wrap img {
+  transform: scale(1.08);
+}
+
+html.anim .novedad-badge {
+  animation: badgePulse 2.6s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(204, 255, 51, .5); }
+  60%      { box-shadow: 0 0 0 8px rgba(204, 255, 51, 0); }
+}
+
+/* Filas del carrito */
+html.anim .item-row {
+  animation: itemIn .4s var(--ease-soft) backwards;
+}
+
+/* ─── 11. FOOTER ─────────────────────────────────────────────────────── */
+
+html.anim .footer-links-group a {
+  display: inline-block;
+  transition: color .2s ease, transform .28s var(--ease-soft);
+}
+
+html.anim .footer-links-group a:hover {
+  transform: translateX(5px);
+}
+
+html.anim .social-btn {
+  transition: background .25s ease, border-color .25s ease,
+              transform .3s var(--ease-back), box-shadow .3s ease;
+}
+
+html.anim .social-btn:hover {
+  transform: translateY(-5px) scale(1.08);
+  box-shadow: 0 10px 22px rgba(204, 255, 51, .22);
+}
+
+html.anim .social-btn img {
+  transition: transform .35s var(--ease-back);
+}
+
+html.anim .social-btn:hover img {
+  transform: rotate(-8deg) scale(1.12);
+}
+
+html.anim .footer-logo {
+  transition: text-shadow .4s ease;
+}
+
+html.anim footer:hover .footer-logo {
+  text-shadow: 0 0 26px rgba(204, 255, 51, .45);
+}
+
+html.anim .powered-by img {
+  filter: grayscale(.5) opacity(.75);
+  transition: transform .35s var(--ease-back), filter .35s ease;
+}
+
+html.anim .powered-by:hover img {
+  transform: scale(1.05);
+  filter: none;
+}
+
+/* ─── 12. FLOTANTES ──────────────────────────────────────────────────── */
+
+html.anim .wa-float img {
+  transition: transform .4s var(--ease-back);
+}
+
+html.anim .wa-float:hover img {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+html.anim .wa-float {
+  animation: floatIn .6s var(--ease-back) .8s backwards;
+}
+
+html.anim .carrito-float-badge.visible {
+  animation: chipPop .4s var(--ease-back);
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(70px) scale(.85); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─── 13. MODALES ────────────────────────────────────────────────────── */
+
+html.anim .sticker-modal-close,
+html.anim .modal-img .cerrar {
+  transition: transform .3s var(--ease-back), color .2s ease, opacity .2s ease;
+}
+
+html.anim .sticker-modal-close:hover,
+html.anim .modal-img .cerrar:hover {
+  transform: rotate(90deg) scale(1.15);
+}
+
+html.anim .gallery-arrow {
+  transition: transform .25s var(--ease-back), background .2s ease, opacity .2s ease;
+}
+
+html.anim .gallery-arrow:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+
+/* ─── 14. ACCESIBILIDAD ──────────────────────────────────────────────── */
+/* Si el sistema pide menos movimiento se apaga todo: nada oculto,
+   nada moviéndose, sólo los cambios de color instantáneos.              */
+
+@media (prefers-reduced-motion: reduce) {
+  html.anim *,
+  html.anim *::before,
+  html.anim *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.anim :where(
+    [data-reveal],
+    .sec-header,
+    .gallery-intro,
+    .page-header,
+    .novedades-header,
+    .pill,
+    .g-item,
+    .cta-final > *,
+    .btn-producto,
+    .about-block,
+    .value-card,
+    .info-card,
+    .contact-card,
+    .step,
+    .faq-item,
+    .policy-block,
+    .detail-row,
+    .divider-title,
+    .info-note,
+    .cta-note,
+    .cta-box,
+    .novedades-cta,
+    .categoria-grupo,
+    .resumen,
+    .scroll-arrow,
+    .g-overlay p
+  ) {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
+  }
+
+  html.anim .sec-header .sec-title::after,
+  html.anim .gallery-intro .sec-title::after,
+  html.anim .cta-final .sec-title::after,
+  html.anim .page-header h1::after,
+  html.anim .novedades-header h1::after {
+    width: 92px;
+  }
+
+  .scroll-progress { display: none; }
+}

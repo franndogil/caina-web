@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="css/modal.css">
   <link rel="stylesheet" href="css/novedades.css">
   <link rel="stylesheet" href="css/sidebar-filtros.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <script>document.documentElement.classList.add('anim');setTimeout(function(){if(!window.__anim)document.documentElement.classList.remove('anim');},2500);</script>
 </head>
 <body>
 
@@ -104,6 +106,7 @@
 <script src="/js/carrito.js"></script>
 <script src="/js/catalogo.js"></script>
 <script src="/js/filtros.js"></script>
+<script src="/js/animations.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     new SidebarFiltros('novedades-contenido', { novedades: true }).init();
