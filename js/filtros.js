@@ -1,10 +1,6 @@
 (function () {
 'use strict';
 
-// ── Singleton data cache compartido entre todas las instancias ─────────────
-let _datos   = null;
-let _promesa = null;
-
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g,
     c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -14,76 +10,18 @@ function clonar(f) {
   return { cats: new Set(f.cats), tipos: new Set(f.tipos), mats: new Set(f.mats), tams: new Set(f.tams) };
 }
 
-async function esperarSupabase() {
-  return new Promise(r => {
-    if (window.supabaseClient) return r(window.supabaseClient);
-    const t = setInterval(() => { if (window.supabaseClient) { clearInterval(t); r(window.supabaseClient); } }, 30);
-    setTimeout(() => { clearInterval(t); r(null); }, 5000);
-  });
-}
+// El dataset y el índice de variantes viven en js/datos.js, compartidos con
+// catalogo.js: cada página los pide una sola vez.
+const cargarDatos     = () => window.Datos.base();
+const variantesListas = () => window.Datos.variantes();
 
-async function fetchTodasVariantes(db) {
-  const rows = [];
-  let from = 0;
-  while (true) {
-    const { data } = await db
-      .from('variante')
-      .select('id_variante, id_producto, id_material, id_tamanio')
-      .range(from, from + 999);
-    if (!data || !data.length) break;
-    rows.push(...data);
-    if (data.length < 1000) break;
-    from += 1000;
-  }
-  return rows;
-}
-
-async function cargarDatos() {
-  if (_datos)   return _datos;
-  if (_promesa) return _promesa;
-
-  _promesa = (async () => {
-    const db = await esperarSupabase();
-    if (!db) return null;
-
-    const [prods, vars, mats, tams, imgs, cats, catRels, tipoMat, tipoTam] = await Promise.all([
-      db.from('producto').select('*, tipo(id_tipo, nombre_tipo)'),
-      fetchTodasVariantes(db),
-      db.from('material').select('id_material, nombre_material'),
-      db.from('tamanio').select('id_tamanio, valor, unidad'),
-      db.from('imagen_producto').select('id_producto, path_imagen, orden').order('orden'),
-      db.from('categoria').select('id_categoria, nombre_categoria'),
-      db.from('producto_pertenece_categoria').select('id_producto, id_categoria'),
-      db.from('tipo_material').select('id_tipo, id_material'),
-      db.from('tipo_tamanio').select('id_tipo, id_tamanio'),
-    ]);
-
-    const imgMap = {};
-    (imgs.data || []).forEach(img => {
-      if (!imgMap[img.id_producto])
-        imgMap[img.id_producto] = db.storage.from('productos').getPublicUrl(img.path_imagen).data.publicUrl;
-    });
-
-    const catPorProd = {};
-    (catRels.data || []).forEach(r => {
-      (catPorProd[r.id_producto] ??= []).push(r.id_categoria);
-    });
-
-    _datos = {
-      productos:   prods.data   || [],
-      variantes:   vars          || [],
-      materiales:  mats.data    || [],
-      tamanios:    tams.data    || [],
-      categorias:  cats.data    || [],
-      tipoMaterial: tipoMat.data || [],
-      tipoTamanio:  tipoTam.data || [],
-      catPorProd,
-      imgMap,
-    };
-    return _datos;
-  })();
-
-  return _promesa;
+// <img> de miniatura: intenta la versión chica y cae a la original si el
+// producto todavía no tiene thumb generado.
+function htmlThumb(urls, alt) {
+  if (!urls) return `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+  return `<img class="sticker-thumb" src="${esc(urls.thumbUrl)}" alt="${esc(alt)}" loading="lazy"
+               data-full="${esc(urls.publicUrl)}"
+               onerror="this.onerror=null;this.src=this.dataset.full">`;
 }
 
 const PAGE_SIZE = 20;
@@ -111,6 +49,7 @@ class SidebarFiltros {
     }
     this._leerURL();
     this._render();
+    variantesListas();   // en segundo plano, para que esté listo al filtrar
   }
 
   _leerURL() {
@@ -133,11 +72,7 @@ class SidebarFiltros {
       if (fs.cats.size && !(this.datos.catPorProd[p.id_producto] || []).some(c => fs.cats.has(c))) return false;
       if (fs.tipos.size && !fs.tipos.has(p.tipo?.id_tipo)) return false;
       if (fs.mats.size || fs.tams.size) {
-        return this.datos.variantes.some(v =>
-          v.id_producto === p.id_producto &&
-          (!fs.mats.size || fs.mats.has(v.id_material)) &&
-          (!fs.tams.size  || fs.tams.has(v.id_tamanio))
-        );
+        return window.Datos.match(p.id_producto, fs.mats, fs.tams);
       }
       return true;
     });
@@ -261,10 +196,7 @@ class SidebarFiltros {
       let offset = 0;
       gridContent = Object.entries(grupos).map(([nombre, items]) => {
         const filas = items.map((p, i) => {
-          const img  = this.datos.imgMap[p.id_producto];
-          const imgH = img
-            ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
-            : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+          const imgH = htmlThumb(this.datos.imgMap[p.id_producto], p.nombre);
           return `<button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
                   onclick="abrirProducto(${p.id_producto})">
             ${imgH}
@@ -280,10 +212,7 @@ class SidebarFiltros {
     } else {
       gridContent = `<div class="stickers-grid">
         ${shown.map((p, i) => {
-          const img  = this.datos.imgMap[p.id_producto];
-          const imgH = img
-            ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
-            : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+          const imgH = htmlThumb(this.datos.imgMap[p.id_producto], p.nombre);
           return `<button class="sticker-btn" style="animation-delay:${i * 40}ms"
                   onclick="abrirProducto(${p.id_producto})">
             ${imgH}
@@ -343,10 +272,7 @@ class SidebarFiltros {
     if (!grid) { this._render(); return; }
 
     nuevos.forEach((p, i) => {
-      const img  = this.datos.imgMap[p.id_producto];
-      const imgH = img
-        ? `<img class="sticker-thumb" src="${esc(img)}" alt="${esc(p.nombre)}" loading="lazy">`
-        : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+      const imgH = htmlThumb(this.datos.imgMap[p.id_producto], p.nombre);
       const btn = document.createElement('button');
       btn.className = 'sticker-btn sticker-btn--new';
       btn.style.animationDelay = `${i * 20}ms`;
@@ -395,13 +321,15 @@ class SidebarFiltros {
 
   _bind(root, wrap) {
     root.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      cb.addEventListener('change', () => {
+      cb.addEventListener('change', async () => {
         const g  = cb.dataset.g;
         const id = +cb.dataset.id;
         this.f[g].has(id) ? this.f[g].delete(id) : this.f[g].add(id);
         // cascade: si se vacían todos los tipos, limpiar materiales y tamaños
         if (g === 'tipos' && !this.f.tipos.size) { this.f.mats.clear(); this.f.tams.clear(); }
         this._visible = PAGE_SIZE;
+        // Filtrar por material o tamaño necesita el índice de variantes.
+        if (this.f.mats.size || this.f.tams.size) await variantesListas();
         this._render();
       });
     });

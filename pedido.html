@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>CAINA | Armá tu pedido</title>
 
+    <link rel="preconnect" href="https://wuhqymfqxfakldkhgbpu.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/landing.css">
@@ -112,18 +115,19 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/config.js"></script>
+  <script src="/js/datos.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/catalogo.js"></script>
   <script src="/js/carrito.js"></script>
   <script src="/js/filtros.js"></script>
   <script src="/js/animations.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async function () {
-      await new SidebarFiltros('sidebar-filtros', {
+    // catalogo.js revela el catálogo apenas hay productos; el sidebar se
+    // completa por su cuenta sin bloquear la grilla.
+    document.addEventListener('DOMContentLoaded', function () {
+      new SidebarFiltros('sidebar-filtros', {
         onFiltrar: function (f) { window.actualizarFiltrosSidebar(f); }
       }).init();
-      document.getElementById('cargando-catalogo').remove();
-      document.getElementById('catalogo-wrap').style.display = '';
     });
   </script>
 

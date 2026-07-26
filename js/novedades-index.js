@@ -6,8 +6,8 @@ async function cargarNovedades() {
   if (!supabase) return;
 
   const [prods, imgs] = await Promise.all([
-    supabase.from("producto").select("*, tipo(id_tipo, nombre_tipo)").eq("esNovedad", true).order("id_producto", { ascending: false }).limit(6),
-    supabase.from("imagen_producto").select("*").order("orden"),
+    supabase.from("producto").select("id_producto, nombre, tipo(id_tipo, nombre_tipo)").eq("esNovedad", true).order("id_producto", { ascending: false }).limit(6),
+    supabase.from("imagen_producto").select("id_producto, path_imagen, orden").order("orden").limit(5000),
   ]);
 
   const productos = prods.data || [];

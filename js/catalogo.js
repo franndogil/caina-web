@@ -4,21 +4,9 @@
 // SUPABASE
 // =========================
 
-if (!window.supabaseClient) {
-  const config = window.SUPABASE_CONFIG;
-  if (!config || !config.url || !config.anonKey) {
-    console.error('SUPABASE_CONFIG no está configurado. Carga js/config.js primero.');
-  }
-  window.supabaseClient = window.supabase.createClient(
-    config.url,
-    config.anonKey
-  );
-}
-
-const supabase = window.supabaseClient;
+const supabase = window.Datos.cliente();
 
 let productos              = [];
-let variantes              = []; // todas las variantes, cargadas con paginación
 let materiales             = [];
 let tamanios               = [];
 let precios                = [];
@@ -45,58 +33,22 @@ let visibleCount = PAGE_SIZE;
 // =========================
 
 async function cargarTodo() {
-  const [prods, mats, tams, pres, imgs, cats, catRels] = await Promise.all([
-    supabase.from("producto").select("*, tipo(id_tipo, nombre_tipo)"),
-    supabase.from("material").select("*"),
-    supabase.from("tamanio").select("*"),
-    supabase.from("precio").select(`
-      id_precio, valor,
-      precio_usa_tipo(id_tipo),
-      precio_usa_material(id_material),
-      precio_usa_tamanio(id_tamanio)
-    `),
-    supabase.from("imagen_producto").select("*").order("orden").limit(5000),
-    supabase.from("categoria").select("id_categoria, nombre_categoria"),
-    supabase.from("producto_pertenece_categoria").select("id_producto, id_categoria").limit(5000),
-  ]);
+  // Dataset compartido con filtros.js: se pide una sola vez por página.
+  // Las variantes (~3900 filas) van aparte, fuera del camino crítico.
+  const d = await window.Datos.base();
+  if (!d) return;
 
-  // Cargar variantes con paginación para superar el límite de 1000 filas de Supabase
-  variantes = [];
-  let varFrom = 0;
-  while (true) {
-    const { data: varPage } = await supabase
-      .from("variante")
-      .select("id_variante, id_producto, id_material, id_tamanio")
-      .range(varFrom, varFrom + 999);
-    if (!varPage || varPage.length === 0) break;
-    variantes = variantes.concat(varPage);
-    if (varPage.length < 1000) break;
-    varFrom += 1000;
-  }
-
-  productos       = prods.data || [];
-  materiales      = mats.data  || [];
-  tamanios        = tams.data  || [];
-  precios         = pres.data  || [];
-  todasCategorias = cats.data  || [];
-
-  // Construir mapa id_producto → imágenes con URL pública
-  imagenesPorProducto = {};
-  (imgs.data || []).forEach(img => {
-    const { data: { publicUrl } } = supabase.storage.from("productos").getPublicUrl(img.path_imagen);
-    if (!imagenesPorProducto[img.id_producto]) imagenesPorProducto[img.id_producto] = [];
-    imagenesPorProducto[img.id_producto].push({ ...img, publicUrl });
-  });
-
-  // Construir mapa id_producto → [id_categoria, ...]
-  categoriasPorProducto = {};
-  (catRels.data || []).forEach(r => {
-    if (!categoriasPorProducto[r.id_producto]) categoriasPorProducto[r.id_producto] = [];
-    categoriasPorProducto[r.id_producto].push(r.id_categoria);
-  });
+  productos             = d.productos;
+  materiales            = d.materiales;
+  tamanios              = d.tamanios;
+  precios               = d.precios;
+  todasCategorias       = d.categorias;
+  imagenesPorProducto   = d.imagenesPorProducto;
+  categoriasPorProducto = d.catPorProd;
 
   aplicarFiltroDesdeURL();
   renderProductos();
+  mostrarCatalogo();
   if (window.renderCarrito) window.renderCarrito();
 
   const productoParam = new URLSearchParams(window.location.search).get('producto');
@@ -104,6 +56,16 @@ async function cargarTodo() {
     const id = parseInt(productoParam);
     if (!isNaN(id)) abrirProducto(id);
   }
+
+  // A partir de acá ya hay grilla en pantalla: las variantes se traen en segundo plano.
+  window.Datos.variantes();
+}
+
+// Revela el catálogo apenas hay productos, sin esperar al sidebar de filtros.
+function mostrarCatalogo() {
+  document.getElementById("cargando-catalogo")?.remove();
+  const wrap = document.getElementById("catalogo-wrap");
+  if (wrap) wrap.style.display = "";
 }
 
 // =========================
@@ -233,13 +195,7 @@ function productosBase() {
     base = base.filter(p => fs.tipos.has(p.tipo?.id_tipo));
   }
   if (fs.mats.size || fs.tams.size) {
-    base = base.filter(p =>
-      variantes.some(v =>
-        v.id_producto === p.id_producto &&
-        (!fs.mats.size || fs.mats.has(v.id_material)) &&
-        (!fs.tams.size  || fs.tams.has(v.id_tamanio))
-      )
-    );
+    base = base.filter(p => window.Datos.match(p.id_producto, fs.mats, fs.tams));
   }
 
   return base;
@@ -333,9 +289,7 @@ function renderProductos() {
   } else if (sortBy === "tamanio") {
     const tamGrupos = {};
     shown.forEach(p => {
-      const ids = [...new Set(
-        variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_tamanio)
-      )];
+      const ids = [...(window.Datos.indice()?.get(p.id_producto)?.tams ?? [])];
       ids.forEach(tid => {
         if (!tamGrupos[tid]) tamGrupos[tid] = [];
         tamGrupos[tid].push(p);
@@ -366,9 +320,7 @@ function renderProductos() {
   } else if (sortBy === "material") {
     const matGrupos = {};
     shown.forEach(p => {
-      const ids = [...new Set(
-        variantes.filter(v => v.id_producto === p.id_producto).map(v => v.id_material)
-      )];
+      const ids = [...(window.Datos.indice()?.get(p.id_producto)?.mats ?? [])];
       ids.forEach(mid => {
         if (!matGrupos[mid]) matGrupos[mid] = [];
         matGrupos[mid].push(p);
@@ -420,16 +372,21 @@ function renderProductos() {
   `;
 }
 
+// <img> de miniatura: intenta la versión chica y cae a la original si el
+// producto todavía no tiene thumb generado.
+function htmlThumb(id_producto, nombre) {
+  const img = (imagenesPorProducto[id_producto] || [])[0];
+  if (!img) return `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
+  return `<img class="sticker-thumb" src="${escapar(img.thumbUrl)}" alt="${escapar(nombre)}" loading="lazy"
+               data-full="${escapar(img.publicUrl)}"
+               onerror="this.onerror=null;this.src=this.dataset.full">`;
+}
+
 function productoGrid(items, offset = 0) {
   return `
     <div class="stickers-grid">
       ${items.map((p, i) => {
-        const imgs  = imagenesPorProducto[p.id_producto] || [];
-        const thumb = imgs[0]?.publicUrl;
-        const imgInner = thumb
-          ? `<img class="sticker-thumb" src="${escapar(thumb)}" alt="${escapar(p.nombre)}" loading="lazy">`
-          : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
-        const imgHtml = `<div class="sticker-img-wrap">${imgInner}</div>`;
+        const imgHtml = `<div class="sticker-img-wrap">${htmlThumb(p.id_producto, p.nombre)}</div>`;
         return `
           <button class="sticker-btn" style="animation-delay:${(offset + i) * 40}ms"
                   onclick="abrirProducto(${p.id_producto})">
@@ -442,10 +399,12 @@ function productoGrid(items, offset = 0) {
   `;
 }
 
-function setSortBy(key) {
+async function setSortBy(key) {
   if (sortBy === key) return;
   sortBy = key;
   visibleCount = PAGE_SIZE;
+  // Agrupar por tamaño o material necesita el índice de variantes.
+  if (key === "tamanio" || key === "material") await window.Datos.variantes();
   const cont = document.getElementById("productos");
   if (!cont) { renderProductos(); return; }
   cont.classList.add("grid-saliendo");
@@ -698,16 +657,11 @@ window.cargarMas = function () {
   if (!grid) { renderProductos(); return; }
 
   nuevos.forEach((p, i) => {
-    const imgs     = imagenesPorProducto[p.id_producto] || [];
-    const thumb    = imgs[0]?.publicUrl;
-    const imgInner = thumb
-      ? `<img class="sticker-thumb" src="${escapar(thumb)}" alt="${escapar(p.nombre)}" loading="lazy">`
-      : `<div class="sticker-thumb sticker-thumb--ph">🎨</div>`;
     const btn = document.createElement('button');
     btn.className = 'sticker-btn sticker-btn--new';
     btn.style.animationDelay = `${i * 20}ms`;
     btn.setAttribute('onclick', `abrirProducto(${p.id_producto})`);
-    btn.innerHTML = `<div class="sticker-img-wrap">${imgInner}</div><span class="sticker-name">${escapar(p.nombre)}</span>`;
+    btn.innerHTML = `<div class="sticker-img-wrap">${htmlThumb(p.id_producto, p.nombre)}</div><span class="sticker-name">${escapar(p.nombre)}</span>`;
     grid.appendChild(btn);
   });
 

@@ -156,9 +156,12 @@ async function handleImageSelect(files) {
 
     for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue;
-        const blob = await convertToWebP(file);
+        // Original para el modal + miniatura para la grilla del catálogo,
+        // que la muestra a ~200px y no necesita los 1400px.
+        const blob      = await convertToWebP(file);
+        const thumbBlob = await convertToWebP(file, 400, 0.8);
         const previewUrl = URL.createObjectURL(blob);
-        imageItems.push({ type: 'new', blob, previewUrl });
+        imageItems.push({ type: 'new', blob, thumbBlob, previewUrl });
     }
 
     imageInput.value = '';
@@ -181,8 +184,15 @@ async function loadExistingImages() {
     renderImageGrid();
 }
 
+// La miniatura vive junto a la original con el prefijo "thumb_".
+// El front deriva este mismo path (ver js/datos.js → pathThumb).
+function pathThumb(path) {
+    const i = path.lastIndexOf('/');
+    return i === -1 ? `thumb_${path}` : `${path.slice(0, i + 1)}thumb_${path.slice(i + 1)}`;
+}
+
 async function saveImages(productId) {
-    // 1. Subir imágenes nuevas y obtener sus paths
+    // 1. Subir imágenes nuevas (original + miniatura) y obtener sus paths
     for (const item of imageItems) {
         if (item.type !== 'new') continue;
         const filename = `${productId}/${Date.now()}_${Math.random().toString(36).slice(2)}.webp`;
@@ -190,6 +200,15 @@ async function saveImages(productId) {
             .from('productos')
             .upload(filename, item.blob, { contentType: 'image/webp', upsert: false });
         if (error) throw error;
+
+        if (item.thumbBlob) {
+            // Si falla la miniatura no rompemos el guardado: el catálogo cae a la original.
+            const { error: thumbError } = await supabase.storage
+                .from('productos')
+                .upload(pathThumb(filename), item.thumbBlob, { contentType: 'image/webp', upsert: true });
+            if (thumbError) console.error('No se pudo subir la miniatura:', thumbError);
+        }
+
         item.path = filename;
     }
 
@@ -198,7 +217,9 @@ async function saveImages(productId) {
         const { data: dbImages } = await supabase
             .from('imagen_producto').select('path_imagen').eq('id_producto', productId);
         const keepPaths = new Set(imageItems.filter(i => i.type === 'existing').map(i => i.path));
-        const toRemove = (dbImages || []).filter(r => !keepPaths.has(r.path_imagen)).map(r => r.path_imagen);
+        const toRemove = (dbImages || [])
+            .filter(r => !keepPaths.has(r.path_imagen))
+            .flatMap(r => [r.path_imagen, pathThumb(r.path_imagen)]);
         if (toRemove.length > 0) {
             await supabase.storage.from('productos').remove(toRemove);
         }
