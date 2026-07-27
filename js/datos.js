@@ -37,16 +37,20 @@ function cliente() {
 // =========================
 
 // Las miniaturas se suben junto a la original con el prefijo "thumb_"
-// (ver admin/js/form-producto.js). Las imágenes antiguas todavía no la tienen,
-// por eso el <img> del grid cae a la original con onerror.
+// (ver admin/js/form-producto.js).
 function pathThumb(path) {
   const i = path.lastIndexOf('/');
   return i === -1 ? `thumb_${path}` : `${path.slice(0, i + 1)}thumb_${path.slice(i + 1)}`;
 }
 
+// Mientras SUPABASE_CONFIG.thumbs esté en false, thumbUrl === publicUrl: pedir
+// una miniatura inexistente cuesta un 404 + reintento y muestra el cuadro roto.
+// Se activa después de generarlas con admin/thumbs.html.
 function urlsDeImagen(db, path) {
   const pub = p => db.storage.from('productos').getPublicUrl(p).data.publicUrl;
-  return { publicUrl: pub(path), thumbUrl: pub(pathThumb(path)) };
+  const publicUrl = pub(path);
+  const usarThumbs = window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.thumbs;
+  return { publicUrl, thumbUrl: usarThumbs ? pub(pathThumb(path)) : publicUrl };
 }
 
 // =========================
@@ -130,20 +134,17 @@ function variantes() {
     if (!db) return null;
 
     const PAGE = 1000;
-
-    // Un HEAD para saber el total y después todas las páginas en paralelo,
-    // en vez de encadenarlas de a una.
-    const { count } = await db
+    const pagina = (i, opts) => db
       .from('variante')
-      .select('id_producto', { count: 'exact', head: true });
+      .select('id_producto, id_material, id_tamanio', opts)
+      .range(i * PAGE, i * PAGE + PAGE - 1);
 
-    const paginas = Math.max(1, Math.ceil((count || PAGE) / PAGE));
-    const respuestas = await Promise.all(
-      Array.from({ length: paginas }, (_, i) =>
-        db.from('variante')
-          .select('id_producto, id_material, id_tamanio')
-          .range(i * PAGE, i * PAGE + PAGE - 1)
-      )
+    // La primera página ya trae el total en Content-Range, así que el resto
+    // sale en paralelo sin un HEAD previo ni encadenar de a una.
+    const primera = await pagina(0, { count: 'exact' });
+    const restantes = Math.max(0, Math.ceil((primera.count || 0) / PAGE) - 1);
+    const respuestas = [primera].concat(
+      await Promise.all(Array.from({ length: restantes }, (_, i) => pagina(i + 1)))
     );
 
     const idx = new Map();

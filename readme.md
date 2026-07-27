@@ -38,8 +38,8 @@ Sitio web completo con vitrina pública dinámica, carrito de compras y panel de
 
 ### Vitrina pública
 
-- **Catálogo dinámico** con carga paginada (20 productos por página con _Load More_)
-- **Filtros en sidebar** por categoría, tipo de producto, material y tamaño — combinables y en cascada
+- **Catálogo dinámico** con carga paginada (20 productos por página con _Load More_) — la grilla se pinta apenas llegan los productos, sin esperar al resto de los datos
+- **Filtros en sidebar** por categoría, tipo de producto, material y tamaño — combinables y en cascada, resueltos en memoria contra un índice de variantes
 - **Carrito de compras** persistido en `localStorage` con cálculo de precios en tiempo real
 - **Envío de pedidos por WhatsApp** — el carrito se formatea automáticamente como mensaje con detalle y total
 - **Sección Novedades** — productos destacados con carga independiente
@@ -87,17 +87,19 @@ caina-web/
 ├── envio.html                   # Información de envíos
 │
 ├── js/                          # Lógica del sitio público
+│   ├── datos.js                 # Capa de datos compartida (single fetch + índice de variantes)
 │   ├── catalogo.js              # Carga y renderizado de productos
 │   ├── filtros.js               # Sidebar filters (multi-select, cascada)
 │   ├── carrito.js               # Carrito con localStorage + generador de mensaje WA
 │   ├── nav.js                   # Navegación dinámica
-│   └── config.js                # Credenciales Supabase (anon key)
+│   └── config.js                # Credenciales Supabase (anon key) + flags
 │
 ├── admin/                       # Panel de administración (ruta protegida)
 │   ├── login.html               # Autenticación
 │   ├── panel.html               # Dashboard principal
 │   ├── form-producto.html       # ABM de productos con imágenes
 │   ├── variantes.html           # Editor masivo de variantes
+│   ├── thumbs.html              # Generador de miniaturas para imágenes ya subidas
 │   └── js/
 │       ├── auth.js              # Gestión de sesión + auto-logout
 │       ├── form-producto.js     # Upload, WebP, reordenamiento, variantes automáticas
@@ -163,13 +165,42 @@ caina-web/
 
 **Paginación de variantes en admin:** el panel puede manejar más de 1.000 variantes con carga lazy, evitando queries pesadas y manteniendo la UI fluida.
 
-**Conversión de imágenes en el cliente:** las imágenes se convierten a WebP y se redimensionan a 1.400px de ancho directamente en el browser antes de subirse a Supabase Storage — sin infraestructura de procesamiento en servidor.
+**Conversión de imágenes en el cliente:** las imágenes se convierten a WebP y se redimensionan a 1.400px de ancho directamente en el browser antes de subirse a Supabase Storage — sin infraestructura de procesamiento en servidor. Además se genera una miniatura de 400px (`thumb_*.webp`) para la grilla del catálogo, evitando bajar la imagen completa donde se muestra a ~200px.
 
 **Auto-generación de variantes:** al guardar un producto, el sistema genera automáticamente todas las combinaciones (material × tamaño) habilitadas para su tipo, eliminando carga manual.
 
 **Skeleton loading:** estados de carga con placeholders animados en catálogo y novedades para mejorar la percepción de velocidad.
 
 **Protección de rutas admin:** toda navegación dentro del panel verifica sesión activa en Supabase Auth y redirige al login si expiró, con auto-logout por inactividad configurable.
+
+---
+
+## Rendimiento
+
+El catálogo maneja 263 productos, 3.906 variantes y 266 imágenes sobre un stack sin bundler ni build step. La grilla queda visible en **~490 ms** con caché limpia, en 15 requests REST.
+
+**Capa de datos compartida (`js/datos.js`).** `catalogo.js` y `filtros.js` consumen una única promesa cacheada, así que cada página pide el dataset una sola vez sin importar cuántos módulos lo necesiten.
+
+**Carga en dos tramos.** El primer render solo necesita nombre y miniatura, así que la grilla sale con eso. Las 3.906 variantes —que hacen falta recién al filtrar por material o tamaño— se cargan en segundo plano: la primera página devuelve el total en `Content-Range` y el resto se dispara en paralelo.
+
+**Índice de variantes en memoria.** Un `Map` de `id_producto → { mats, tams, pares }` resuelve los filtros y los contadores del sidebar en O(1), sin volver a la red ni recorrer el listado completo en cada clic. El set `pares` mantiene la semántica correcta: con material y tamaño activos a la vez, exige una variante que cumpla ambos y no dos variantes distintas.
+
+**Render progresivo.** La grilla se revela apenas llegan los productos y el sidebar de filtros se completa por su cuenta, sin bloquearla.
+
+**Miniaturas.** Las imágenes se suben a 1.400 px, pero la grilla las muestra a ~200 px. El alta genera además una versión de 400 px (`thumb_*.webp`) junto a la original, y el `<img>` cae a la imagen completa si la miniatura no está disponible.
+
+**Otros:** `preconnect` a Supabase, jsDelivr y `fonts.gstatic.com` para adelantar DNS y TLS; `select` explícito con solo las columnas que se usan; y `limit` explícito en las tablas que pueden superar las 1.000 filas que Supabase devuelve por defecto.
+
+### Miniaturas: activación
+
+Las miniaturas se sirven cuando existen, controlado por flag:
+
+```js
+// js/config.js
+thumbs: false   // pasar a true una vez generadas
+```
+
+`admin/thumbs.html` las genera en lote desde el browser para las imágenes ya subidas (requiere sesión de admin). No toca ni borra las originales, saltea las que ya existan y es idempotente, así que se puede correr las veces que haga falta. Una vez terminado, poner `thumbs: true`.
 
 ---
 
@@ -195,9 +226,16 @@ git clone <repo-url>
 cd caina-web
 
 # 2. Configurar credenciales de Supabase
-# Editar js/config.js y admin/js/config.js:
-const SUPABASE_URL = 'https://tu-proyecto.supabase.co'
-const SUPABASE_ANON_KEY = 'tu-anon-key'
+# Copiar js/config.template.js a js/config.js y completar:
+window.SUPABASE_CONFIG = {
+  url: 'https://tu-proyecto.supabase.co',
+  anonKey: 'tu-anon-key',
+  thumbs: false            // ver "Rendimiento → Miniaturas"
+}
+
+# El panel admin usa su propio archivo (ES modules), admin/js/config.js:
+export const SUPABASE_URL = 'https://tu-proyecto.supabase.co'
+export const SUPABASE_ANON_KEY = 'tu-anon-key'
 
 # 3. Levantar con cualquier servidor HTTP estático
 npx http-server .

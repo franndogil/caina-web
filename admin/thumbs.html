@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAINA | Generar miniaturas</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .tb-wrap   { max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    .tb-nota   { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:10px;
+                 padding:1rem; margin:1rem 0; line-height:1.6; font-size:.92rem; }
+    .tb-nota code { background:#000; padding:.1rem .35rem; border-radius:4px; }
+    .tb-barra  { height:22px; background:#1a1a1a; border-radius:11px; overflow:hidden; margin:1rem 0; }
+    .tb-fill   { height:100%; width:0; background:var(--lime,#ccff33); transition:width .2s; }
+    .tb-log    { background:#0e0e0e; border:1px solid #2a2a2a; border-radius:10px; padding:.75rem;
+                 height:320px; overflow:auto; font-family:ui-monospace,monospace; font-size:.78rem; }
+    .tb-log p  { margin:0 0 .2rem; }
+    .tb-ok     { color:#8f8; } .tb-err { color:#f77; } .tb-skip { color:#888; }
+    .tb-stats  { display:flex; gap:1.5rem; flex-wrap:wrap; margin:.75rem 0; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <div class="tb-wrap">
+    <h1>Generar miniaturas</h1>
+
+    <div class="tb-nota">
+      Crea una versión de <strong>400&nbsp;px</strong> de cada imagen del catálogo
+      (<code>thumb_*.webp</code>, junto a la original) para que la grilla no baje
+      las de 1400&nbsp;px. No modifica ni borra las originales, y saltea las que
+      ya tengan miniatura, así que se puede correr varias veces sin problema.
+      <br><br>
+      Al terminar, poné <code>thumbs: true</code> en <code>js/config.js</code>
+      para que el catálogo empiece a usarlas.
+    </div>
+
+    <button id="btn" class="btn">Generar miniaturas</button>
+
+    <div class="tb-stats">
+      <span>Total: <strong id="s-total">—</strong></span>
+      <span class="tb-ok">Creadas: <strong id="s-ok">0</strong></span>
+      <span class="tb-skip">Ya existían: <strong id="s-skip">0</strong></span>
+      <span class="tb-err">Errores: <strong id="s-err">0</strong></span>
+    </div>
+
+    <div class="tb-barra"><div class="tb-fill" id="fill"></div></div>
+    <div class="tb-log" id="log"><p class="tb-skip">Listo para empezar.</p></div>
+  </div>
+
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  import { SUPABASE_URL, SUPABASE_ANON_KEY } from './js/config.js';
+  import { getUserSession } from './js/auth.js';
+
+  (async function () {
+    // Subir al storage requiere sesión: mismo guardia que el panel.
+    const session = await getUserSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const ANCHO   = 400;   // la grilla las muestra a ~200px (2x para pantallas retina)
+    const CALIDAD = 0.8;
+    const EN_PARALELO = 4;
+
+    const log   = document.getElementById('log');
+    const fill  = document.getElementById('fill');
+    const btn   = document.getElementById('btn');
+    const stats = { ok: 0, skip: 0, err: 0, hechos: 0, total: 0 };
+
+    function escribir(msg, clase) {
+      const p = document.createElement('p');
+      p.className = clase || '';
+      p.textContent = msg;
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function pintar() {
+      document.getElementById('s-ok').textContent   = stats.ok;
+      document.getElementById('s-skip').textContent = stats.skip;
+      document.getElementById('s-err').textContent  = stats.err;
+      fill.style.width = stats.total ? (stats.hechos / stats.total * 100) + '%' : '0';
+    }
+
+    function pathThumb(path) {
+      const i = path.lastIndexOf('/');
+      return i === -1 ? 'thumb_' + path : path.slice(0, i + 1) + 'thumb_' + path.slice(i + 1);
+    }
+
+    // Redimensiona un blob con canvas, igual que el alta de productos.
+    function redimensionar(blob) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(blob);
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if (w > ANCHO) { h = Math.round(h * ANCHO / w); w = ANCHO; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          c.toBlob(b => { URL.revokeObjectURL(url); b ? resolve(b) : reject(new Error('canvas vacío')); },
+                   'image/webp', CALIDAD);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('no se pudo decodificar')); };
+        img.src = url;
+      });
+    }
+
+    async function procesar(path) {
+      const destino = pathThumb(path);
+      try {
+        // ¿ya existe?
+        const urlThumb = db.storage.from('productos').getPublicUrl(destino).data.publicUrl;
+        if ((await fetch(urlThumb, { method: 'HEAD' })).ok) {
+          stats.skip++; escribir('= ' + destino, 'tb-skip'); return;
+        }
+
+        const urlOrig = db.storage.from('productos').getPublicUrl(path).data.publicUrl;
+        const resp = await fetch(urlOrig);
+        if (!resp.ok) throw new Error('no se pudo bajar la original (' + resp.status + ')');
+
+        const original = await resp.blob();
+        const thumb    = await redimensionar(original);
+
+        const { error } = await db.storage.from('productos')
+          .upload(destino, thumb, { contentType: 'image/webp', upsert: true });
+        if (error) throw error;
+
+        stats.ok++;
+        escribir('+ ' + destino + '  (' + Math.round(original.size / 1024) + ' kB → '
+                 + Math.round(thumb.size / 1024) + ' kB)', 'tb-ok');
+      } catch (e) {
+        stats.err++;
+        escribir('! ' + destino + '  ' + (e.message || e), 'tb-err');
+      } finally {
+        stats.hechos++; pintar();
+      }
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Generando…';
+      log.innerHTML = '';
+
+      const { data, error } = await db
+        .from('imagen_producto').select('path_imagen').limit(5000);
+
+      if (error) {
+        escribir('No se pudo leer imagen_producto: ' + error.message, 'tb-err');
+        btn.disabled = false; btn.textContent = 'Reintentar'; return;
+      }
+
+      const paths = (data || []).map(r => r.path_imagen).filter(Boolean);
+      stats.total = paths.length;
+      document.getElementById('s-total').textContent = stats.total;
+      escribir('Procesando ' + stats.total + ' imágenes…');
+
+      // De a EN_PARALELO para no saturar el navegador ni el storage.
+      const cola = paths.slice();
+      await Promise.all(Array.from({ length: EN_PARALELO }, async () => {
+        while (cola.length) await procesar(cola.shift());
+      }));
+
+      escribir('');
+      escribir('Terminado. Creadas: ' + stats.ok + ' · Ya existían: ' + stats.skip
+               + ' · Errores: ' + stats.err);
+      if (stats.err === 0 && (stats.ok + stats.skip) === stats.total) {
+        escribir('Ahora poné  thumbs: true  en js/config.js.', 'tb-ok');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Volver a correr';
+    });
+  })();
+  </script>
+</body>
+</html>
