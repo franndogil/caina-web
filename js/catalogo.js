@@ -96,6 +96,12 @@ function getMaterialesDeProducto(vars) {
   return materiales.filter(m => ids.includes(m.id_material));
 }
 
+// Pedido mínimo del tipo, si tiene (ver minimosPorTipo en js/config.js).
+function getMinimoTipo(id_tipo) {
+  const reglas = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.minimosPorTipo) || [];
+  return reglas.find(r => r.idTipo === id_tipo) || null;
+}
+
 function getPrecio(id_tipo, id_material, id_tamanio) {
   const tieneTipo     = p => p.precio_usa_tipo?.some(tp => tp.id_tipo === id_tipo);
   const tieneMat      = p => p.precio_usa_material?.some(m => m.id_material === id_material);
@@ -467,6 +473,16 @@ function renderModal() {
   const canAdd     = precioObj != null;
   const fmt        = n => n.toLocaleString("es-AR");
 
+  // El mínimo se cumple sumando unidades del tipo en todo el carrito, así que
+  // acá solo se avisa: agregar de a menos sigue estando permitido.
+  const minTipo     = getMinimoTipo(tipo?.id_tipo ?? null);
+  const yaEnPedido  = minTipo && window.unidadesDeTipo ? window.unidadesDeTipo(minTipo.idTipo) : 0;
+  const avisoMinimo = minTipo
+    ? `<p class="sel-warn">Pedido mínimo: ${minTipo.minimo} ${escapar(minTipo.nombre.toLowerCase())} en total, combinando los diseños que quieras.${
+        yaEnPedido > 0 ? ` Ya llevás ${yaEnPedido}.` : ""
+      }</p>`
+    : "";
+
   // Galería
   const currentImg = imgs[sel.imgIndex];
   const galleryHtml = imgs.length > 0 ? `
@@ -542,6 +558,8 @@ function renderModal() {
       </span>
     </div>
 
+    ${avisoMinimo}
+
     <button class="sel-confirm" onclick="confirmarProducto()" ${canAdd ? "" : "disabled"}>
       Agregar al pedido
     </button>
@@ -603,7 +621,8 @@ function confirmarProducto() {
     sel.cantidad,
     sel.producto.tipo?.nombre_tipo ?? "Producto",
     sel.materialId,
-    precioObj.valor
+    precioObj.valor,
+    sel.producto.tipo?.id_tipo ?? null
   );
 
   cerrarSticker();

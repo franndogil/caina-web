@@ -18,11 +18,51 @@ function totalCarritoUnidades() {
 }
 
 // ========================
+// PEDIDO MÍNIMO
+// ========================
+
+// Reglas en js/config.js. El mínimo se cuenta por tipo sumando todas las
+// unidades de ese tipo, así que se pueden combinar diseños distintos.
+
+function reglasMinimo() {
+  return (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.minimosPorTipo) || [];
+}
+
+// Los ítems guardados antes de esta versión no tienen tipoId. Para esos se cae
+// al nombre del tipo, que el carrito ya venía guardando en `categoria`.
+function esDelTipo(item, regla) {
+  return item.tipoId != null ? item.tipoId === regla.idTipo : item.categoria === regla.nombre;
+}
+
+// Tipos presentes en el carrito que todavía no llegan a su mínimo.
+// Un tipo sin unidades no cuenta: el mínimo solo aplica si se pidió algo de él.
+function faltantesMinimo() {
+  return reglasMinimo().reduce((acc, r) => {
+    const actual = carrito.reduce((sum, i) => sum + (esDelTipo(i, r) ? i.cantidad : 0), 0);
+    if (actual > 0 && actual < r.minimo) acc.push({ ...r, actual, faltan: r.minimo - actual });
+    return acc;
+  }, []);
+}
+
+// Unidades de un tipo ya cargadas en el carrito (lo usa el aviso del modal).
+function unidadesDeTipo(idTipo) {
+  const regla = reglasMinimo().find(r => r.idTipo === idTipo);
+  if (!regla) return 0;
+  return carrito.reduce((sum, i) => sum + (esDelTipo(i, regla) ? i.cantidad : 0), 0);
+}
+
+function textoFaltante(f) {
+  const tipo = f.nombre.toLowerCase();
+  const verbo = f.faltan === 1 ? "falta" : "faltan";
+  return `Pedido mínimo: ${f.minimo} ${tipo} — te ${verbo} ${f.faltan}. Podés combinar diseños distintos.`;
+}
+
+// ========================
 // AGREGAR AL CARRITO
 // ========================
 
 // precioUnitario: valor por unidad ya resuelto desde catalogo.js
-function agregar(nombre, material, tamano, tamanioId, unidades, categoria, materialId, precioUnitario) {
+function agregar(nombre, material, tamano, tamanioId, unidades, categoria, materialId, precioUnitario, tipoId) {
   const existente = carrito.find(
     i => i.nombre === nombre && i.material === material && i.tamano === tamano
   );
@@ -30,7 +70,7 @@ function agregar(nombre, material, tamano, tamanioId, unidades, categoria, mater
   if (existente) {
     existente.cantidad += unidades;
   } else {
-    carrito.push({ nombre, material, tamano, tamanioId, cantidad: unidades, categoria, materialId, precioUnitario });
+    carrito.push({ nombre, material, tamano, tamanioId, cantidad: unidades, categoria, materialId, precioUnitario, tipoId });
   }
 
   guardar();
@@ -78,14 +118,26 @@ function render() {
         `;
       }).join("");
 
+      const faltantes = faltantesMinimo();
+
       totalDiv.innerHTML = `
         <div class="total-line">${totalU} unidades · Total: $${format(Math.round(totalPrecio))}</div>
+        ${faltantes.map(f => `<p class="aviso-minimo">${textoFaltante(f)}</p>`).join("")}
       `;
     }
   }
 
+  actualizarBotonEnviar();
   if (window.renderModalIfOpen) window.renderModalIfOpen();
   actualizarBadge();
+}
+
+// El botón queda apagado mientras falte algún mínimo, pero sigue siendo
+// clickeable: el click resalta el aviso en vez de no hacer nada.
+function actualizarBotonEnviar() {
+  const btn = document.querySelector(".resumen .btn-primary");
+  if (!btn) return;
+  btn.classList.toggle("btn-primary--bloqueado", carrito.length > 0 && faltantesMinimo().length > 0);
 }
 
 function actualizarBadge() {
@@ -171,6 +223,18 @@ function animarAgregado() {
 function enviarPedido() {
   if (!carrito.length) return;
 
+  // Mínimo sin cumplir: no se manda nada, se resalta el aviso del resumen.
+  if (faltantesMinimo().length) {
+    const aviso = document.querySelector(".aviso-minimo");
+    if (aviso) {
+      aviso.scrollIntoView({ behavior: "smooth", block: "center" });
+      aviso.classList.remove("aviso-minimo--flash");
+      void aviso.offsetWidth;                      // reinicia la animación si ya estaba
+      aviso.classList.add("aviso-minimo--flash");
+    }
+    return;
+  }
+
   let totalPrecio = 0;
   let mensaje = "Hola *CAINA*!\n\nQuiero pedir:\n";
 
@@ -217,6 +281,7 @@ function enviarPedido() {
 // ========================
 
 window.getTotalCarritoUnidades = totalCarritoUnidades;
+window.unidadesDeTipo          = unidadesDeTipo;
 window.renderCarrito           = render;
 window.irAlCarrito             = irAlCarrito;
 

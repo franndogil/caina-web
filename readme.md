@@ -41,6 +41,7 @@ Sitio web completo con vitrina pública dinámica, carrito de compras y panel de
 - **Catálogo dinámico** con carga paginada (20 productos por página con _Load More_) — la grilla se pinta apenas llegan los productos, sin esperar al resto de los datos
 - **Filtros en sidebar** por categoría, tipo de producto, material y tamaño — combinables y en cascada, resueltos en memoria contra un índice de variantes
 - **Carrito de compras** persistido en `localStorage` con cálculo de precios en tiempo real
+- **Pedido mínimo por tipo de producto** — configurable, se cumple sumando unidades del tipo (se pueden combinar diseños)
 - **Envío de pedidos por WhatsApp** — el carrito se formatea automáticamente como mensaje con detalle y total
 - **Sección Novedades** — productos destacados con carga independiente
 - **Galería estilo Instagram** con imágenes de muestra
@@ -151,11 +152,27 @@ caina-web/
 1. Cliente navega el catálogo → filtra por tipo / material / tamaño
 2. Selecciona variante → agrega al carrito
 3. El carrito persiste entre navegaciones (localStorage)
-4. "Enviar pedido" → genera mensaje WhatsApp con:
+4. Si algún tipo no llega a su pedido mínimo, el resumen lo avisa y el envío queda bloqueado
+5. "Enviar pedido" → genera mensaje WhatsApp con:
       - Listado de productos, variantes y cantidades
       - Precio por ítem y total final
-5. El cliente envía el mensaje al número de CAINA para coordinar el pedido
+6. El cliente envía el mensaje al número de CAINA para coordinar el pedido
 ```
+
+### Pedido mínimo
+
+Algunos tipos de producto tienen una cantidad mínima por pedido. La regla es **por tipo y sumando unidades**: para llegar al mínimo se pueden combinar diseños distintos del mismo tipo (3 de un sticker + 7 de otro cumple un mínimo de 10). Los tipos que no figuran en la config no tienen mínimo — es el caso de vasos, planchas y packs, que se venden de a uno.
+
+```js
+// js/config.js
+minimosPorTipo: [
+  { idTipo: 24, nombre: 'Stickers', minimo: 10 }
+]
+```
+
+`idTipo` y `nombre` salen de la tabla `tipo`. El `nombre` se usa como respaldo para los carritos que ya estaban guardados en `localStorage` antes de esta versión, que no registraban el tipo del ítem — por eso tiene que coincidir con el `nombre_tipo` de la base.
+
+Mientras falte, el modal del producto lo anticipa, el resumen muestra cuánto falta y el botón de WhatsApp queda bloqueado. Es validación de cliente: el pedido se cierra por WhatsApp, así que no hay un backend donde imponerla.
 
 ---
 
@@ -230,7 +247,8 @@ cd caina-web
 window.SUPABASE_CONFIG = {
   url: 'https://tu-proyecto.supabase.co',
   anonKey: 'tu-anon-key',
-  thumbs: false            // ver "Rendimiento → Miniaturas"
+  thumbs: false,           // ver "Rendimiento → Miniaturas"
+  minimosPorTipo: []       // ver "Flujo de compra → Pedido mínimo"
 }
 
 # El panel admin usa su propio archivo (ES modules), admin/js/config.js:

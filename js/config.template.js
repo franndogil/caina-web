@@ -11,5 +11,13 @@ window.SUPABASE_CONFIG = {
   // Miniaturas del catálogo (imágenes "thumb_*" en el bucket productos).
   // Dejar en false hasta correr admin/thumbs.html: si se piden thumbs que no
   // existen, cada imagen hace un 404 + reintento y se ve un cuadro roto.
-  thumbs: false
+  thumbs: false,
+
+  // Pedido mínimo por tipo de producto. El mínimo se cuenta sumando todas las
+  // unidades de ese tipo que haya en el carrito, así que se pueden combinar
+  // diseños distintos para llegar. Los tipos que no figuran acá no tienen
+  // mínimo. `idTipo` y `nombre` salen de la tabla `tipo`.
+  minimosPorTipo: [
+    // { idTipo: 24, nombre: 'Stickers', minimo: 10 }
+  ]
 };

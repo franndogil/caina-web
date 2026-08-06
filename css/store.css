@@ -136,6 +136,16 @@
       transform: translateY(-2px);
     }
 
+    /* Pedido mínimo sin cumplir: sigue clickeable, el click resalta el aviso. */
+    .btn-primary--bloqueado {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .btn-primary--bloqueado:hover {
+      transform: none;
+    }
+
     /* ===== PRODUCTOS DINÁMICOS ===== */
 
     .producto-item {
@@ -471,6 +481,31 @@
       font-family: 'Bebas Neue';
       font-size: 1.8rem;
       color: var(--lime);
+    }
+
+    /* ===== AVISO DE PEDIDO MÍNIMO ===== */
+
+    .aviso-minimo {
+      max-width: 460px;
+      margin: .8rem auto 0;
+      padding: .7rem .9rem;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      line-height: 1.4;
+      color: #f1c27d;
+      background: rgba(255,180,60,.08);
+      border: 1px solid rgba(255,180,60,.25);
+      border-radius: 10px;
+    }
+
+    .aviso-minimo--flash {
+      animation: avisoMinimoFlash .6s ease;
+    }
+
+    @keyframes avisoMinimoFlash {
+      0%, 100% { background: rgba(255,180,60,.08); transform: none; }
+      30%      { background: rgba(255,180,60,.24); transform: scale(1.03); }
+      65%      { background: rgba(255,180,60,.14); transform: none; }
     }
 
     /* estilos del botón flotante → base.css */
