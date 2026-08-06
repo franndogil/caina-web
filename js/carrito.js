@@ -184,7 +184,7 @@ function enviarPedido() {
   mensaje += `\n*Total estimado: $${format(Math.round(totalPrecio))}*`;
   mensaje += "\n\n¿Me confirman precio y tiempos?";
 
-  window.open(`https://wa.me/5491138454766?text=${encodeURIComponent(mensaje)}`);
+  window.open(`https://wa.me/5491164365924?text=${encodeURIComponent(mensaje)}`);
 }
 
 // ========================
